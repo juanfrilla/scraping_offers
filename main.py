@@ -30,8 +30,6 @@ def scrape_everything():
 
 if __name__ == "__main__":
     os.makedirs(LOG_DIR, exist_ok=True)
-
-    st.title("Web Scraping Offers in Spain")
     logger = get_logger("main")
 
     if last_scraped_today() and os.path.exists(DATA_FILE):
@@ -94,6 +92,7 @@ if __name__ == "__main__":
         key=lambda x: datetime.strptime(x["date_posted"], "%Y-%m-%dT%H:%M:%SZ"),
         reverse=True,
     )
+    st.title(f"Web Scraping Offers in Spain ({len(sorted_jobs_by_datetime)} results)")
 
     for job in sorted_jobs_by_datetime:
         with st.container():
