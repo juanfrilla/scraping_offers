@@ -4,7 +4,7 @@ import re
 import curl_cffi as requests
 
 from logger import get_logger
-from utils import read_json
+from utils import normalize_string, read_json
 
 
 class EmpleateScraper:
@@ -46,17 +46,17 @@ class EmpleateScraper:
         self.logger.info(f"Found {len(docs)} job postings.")
         for doc_id, doc in enumerate(docs):
             self.logger.info(f"Parsing job posting {doc_id + 1}/{len(docs)}")
-            title = doc.get("titulo", "")
-            company = doc.get("contacto", "")
-            location = doc.get("provinciaF", "")
+            title = doc.get("titulo", "N/A")
+            company = doc.get("contacto", "N/A")
+            location = doc.get("provinciaF", "N/A")
             url = doc.get("url", "")
             date_posted_str = doc.get("fechaCreacionPortal", "")
             platform = doc.get("entitytype")
             records.append(
                 {
                     "title": title,
-                    "company": company,
-                    "location": location,
+                    "company": normalize_string(company),
+                    "location": normalize_string(location),
                     "url": url,
                     "date_posted": date_posted_str,
                     "platform": platform,
@@ -74,5 +74,5 @@ class EmpleateScraper:
         return jobs
 
     def scrape_test(self):
-        json_data = read_json("empleate_jobsearch.json")
+        json_data = read_json("./seed/empleate_jobsearch.json")
         return self.parse(json_data)

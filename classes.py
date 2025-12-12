@@ -1,6 +1,7 @@
-from pydantic import BaseModel, HttpUrl
-from typing import Optional
 from datetime import datetime
+from typing import Optional
+
+from pydantic import BaseModel, HttpUrl
 
 
 class SalaryModel(BaseModel):

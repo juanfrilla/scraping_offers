@@ -1,6 +1,6 @@
 import json
 import os
-from datetime import date
+from datetime import date, datetime
 
 from constants import LAST_SCRAPED_FILE
 
@@ -50,3 +50,14 @@ def update_last_scraped() -> None:
 
     with open(LAST_SCRAPED_FILE, "w") as f:
         json.dump(data, f, indent=2)
+
+
+def normalize_string(s: str) -> str:
+    return s.title().strip()
+
+
+def convert_datetime_str_to_other_format(
+    entry_datetime: str, input_format: str, output_format: str
+) -> str:
+    dt = datetime.strptime(entry_datetime, input_format)
+    return dt.strftime(output_format)

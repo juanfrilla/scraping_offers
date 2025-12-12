@@ -6,8 +6,7 @@ migrate to Rust
 # TODO prueba sucia a ver si funciona en prod y después lo termino
 # TODO ponerle los filtros de streamlit para filtrar por el trabajo que quiero dependiendo de los parámetros
 # TODO ordenar ofertas por fecha al darmelas
+# TODO meter busqueda de palabras clave
 
 # ANTES DE LA PRIMERA SUBIDA
-# TODO eliminar el entorno virtual y crear desde cero solo con lo que me haga falta
-# TODO poner una carpeta con datos reales
 # TODO poener una carpeta desde la cual se leerán los datos

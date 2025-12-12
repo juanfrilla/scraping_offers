@@ -5,7 +5,7 @@ from bs4 import BeautifulSoup
 from curl_cffi import requests
 
 from logger import get_logger
-from utils import read_json
+from utils import normalize_string, read_json
 
 
 class InfoJobsScraper:
@@ -70,22 +70,30 @@ class InfoJobsScraper:
         records = []
         for offer_idx, offer in enumerate(offers):
             self.logger.info(f"Parsing job posting {offer_idx + 1}/{len(offers)}")
-            title = offer.get("title", "")
-            company = offer.get("companyName", "")
-            location = offer.get("city", "")
+            title = offer.get("title", "N/A")
+            company = offer.get("companyName", "N/A")
+            location = offer.get("city", "N/A")
             url = offer.get("link", "")
             date_posted_str = offer.get("publishedAt", "")
             records.append(
                 {
                     "title": title,
-                    "company": company,
-                    "location": location,
+                    "company": normalize_string(company),
+                    "location": self.determine_location(location),
                     "url": url,
                     "date_posted": date_posted_str,
                     "platform": "INFOJOBS",
                 }
             )
         return records
+
+    def determine_location(self, location: str) -> str:
+        locations = {
+            "San Sebastián De Los Reyes": "Madrid",
+        }
+        location_lower = location.lower()
+        normalized = normalize_string(location_lower)
+        return locations.get(normalized, normalized)
 
     def scrape(self):
         self.logger.info("Starting Infojobs scraping.")
@@ -98,5 +106,5 @@ class InfoJobsScraper:
         return jobs
 
     def scrape_test(self):
-        json_data = read_json("infojobs_jobsearch.json")
+        json_data = read_json("./seed/infojobs_jobsearch.json")
         return self.parse(json_data)

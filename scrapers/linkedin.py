@@ -5,7 +5,7 @@ import curl_cffi as requests
 from bs4 import BeautifulSoup
 
 from logger import get_logger
-from utils import load_html, save_json
+from utils import load_html, normalize_string
 
 
 class LinkedinScraper:
@@ -81,19 +81,19 @@ class LinkedinScraper:
                     continue
                 raw_json_content = script_tag.string
                 json_content = self.json_from_ld(raw_json_content)
-                title = json_content.get("title", title)
-                company = json_content.get("hiringOrganization", {}).get("name", "")
+                title = json_content.get("title", "N/A")
+                company = json_content.get("hiringOrganization", {}).get("name", "N/A")
                 location = (
                     json_content.get("jobLocation", {})
                     .get("address", {})
-                    .get("addressLocality", "")
+                    .get("addressLocality", "N/A")
                 )
                 date_posted_str = json_content.get("datePosted", "")
             records.append(
                 {
                     "title": title,
-                    "company": company,
-                    "location": location,
+                    "company": normalize_string(company),
+                    "location": self.determine_location(location),
                     "url": url,
                     "date_posted": f"{date_posted_str}T00:00:00Z",
                     "platform": "LINKEDIN",
@@ -101,6 +101,18 @@ class LinkedinScraper:
             )
 
         return records
+
+    def determine_location(self, location: str) -> str:
+        locations = {
+            "Sevilla La Nueva": "Sevilla",
+            "Comunidad De Madrid, España": "Madrid",
+            "Valencia/València": "Valencia",
+        }
+        location_lower = location.lower()
+        if location_lower.endswith("y alrededores"):
+            location_lower = location_lower.replace("y alrededores", "")
+        normalized = normalize_string(location_lower)
+        return locations.get(normalized, normalized)
 
     def json_from_ld(self, raw: str) -> dict:
         clean = raw.strip()
@@ -116,5 +128,5 @@ class LinkedinScraper:
         return jobs
 
     def scrape_test(self):
-        html_content = load_html("linkedin_jobsearch.html")
+        html_content = load_html("./seed/linkedin_jobsearch.html")
         return self.parse(html_content)
