@@ -1,0 +1,9 @@
+[tool.ruff]
+# Enable fixing
+fix = true
+
+# Enable import sorting rules
+select = ["I", "E", "F"]
+
+# Optional: configure line length for import sorting
+line-length = 88

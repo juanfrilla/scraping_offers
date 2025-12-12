@@ -1,0 +1,48 @@
+{
+    "@context": "http://schema.org",
+    "@type": "JobPosting",
+    "datePosted": "2025-12-10T06:48:43.000Z",
+    "description": "<em><strong>This opportunity is only for candidates currently residing in the specified country. Your location may affect eligibility and rates. Please submit your resume in English and indicate your level of English.<br><br></strong></em>Mindrift is looking for highly skilled Vibecode specialists to join the Tendem project (https://tendem.ai/) and shape the future of hybrid agents—where human expertise and AI-driven automation work together seamlessly to deliver exceptional results for real clients.<br><br>In this role, you'll work alongside Tendem Agent that handle repetitive and time-consuming tasks, while you provide the critical thinking, domain expertise, and quality control needed to produce accurate, reliable, and actionable outputs.<br><br>You'll be solving complex, real-world challenges across multiple domains—from data analysis to web scraping, data processing, and research synthesis.<br><br>This flexible, part-time remote opportunity is ideal for professionals with technical expertise and hands-on experience in scripting, automation, or AI-driven tools.<br><br><strong>What We Do<br><br></strong>The Mindrift platform connects specialists with AI projects from major tech innovators. Our mission is to unlock the potential of Generative AI by tapping into real-world expertise from across the globe.<br><br><strong>About The Role<br><br></strong>As a Vibe Code specialist, you'll handle research, data extraction, and analysis tasks requiring technical precision and strategic problem-solving.<br><br><ul><li>Conduct advanced web research and data mining using multiple tools to locate and extract information from official sources. Use LLMs and advanced prompts to refine search strategies and validate data accuracy by cross-referencing authoritative sources. </li><li>Perform web scraping and data extraction by navigating complex website structures and multi-level pages (regions → companies → detailed pages). Handle dynamic content, archived pages, and various HTML formats, and organize extracted data into clean, well-formatted CSV files. </li><li>Write and optimize Python scripts for data processing and analysis using libraries such as pandas, BeautifulSoup, Selenium, and matplotlib. Transform raw data into structured formats (CSV, JSON, tables) and create visualizations when required. </li><li>Carry out data processing and quality assurance by cleaning, validating, and structuring datasets. Ensure data integrity across multiple sources, apply formatting specifications, and run verification steps to maintain high output quality. </li><li>Apply strong problem-solving and task execution skills to break down complex workflows, troubleshoot technical issues independently, and adapt quickly between different domains and task types with minimal supervision. </li><li>Produce clear documentation and high-quality outputs that follow exact requirements for file formats, naming conventions, and data structure. Maintain reproducible workflows and well-organized code<br><br></li></ul><strong>How To Get Started<br><br></strong>Simply apply to this post, qualify, and get the chance to contribute to projects that match your technical skills, on your own schedule. From coding and automation to fine-tuning AI outputs, you'll play a key role in advancing AI capabilities and real-world applications.<br><br><strong>Requirements<br><br></strong><ul><li>At least 1 year of relevant experience in data analysis, AI automation, data engineering, or software development is desirable. </li><li>Bachelor's or Master's Degree in Engineering, Applied Mathematics, Computer Science, or related technical fields is a plus</li><li>Python proficiency: Demonstrated ability to write functional scripts for data analysis, web scraping, and visualization. </li><li>Web scraping expertise: Experience extracting structured data from websites using tools like BeautifulSoup, Scrapy, Selenium, or similar</li><li>Data manipulation: Strong skills in cleaning, transforming, and organizing datasets using pandas or equivalent libraries</li><li>Research capabilities: Ability to locate authoritative sources, official databases, and government datasets. </li><li>Data visualization: Experience creating charts and graphs using matplotlib, seaborn, or similar libraries</li><li>Hands-on experience with LLMs and AI frameworks to enhance automation and problem-solving. </li><li>Advanced web research skills with ability to find specific, credible data sources</li><li>Strong attention to detail and commitment to data accuracy. </li><li>Ability to follow complex, multi-step instructions precisely</li><li>Comfortable working with CSV files, structured data formats, and file specifications</li><li>Self-directed work ethic with ability to troubleshoot independently</li><li>English proficiency: Upper-intermediate (B2) or above (required)</li><li>Fully remote role: laptop, stable internet connection, and time availability required</li><li>Flexibility to switch between tasks and adapt to new methods quickly</li><li>Willingness to work with detailed, sometimes challenging guidelines<br><br></li></ul><strong>Benefits<br><br></strong><strong>Why this freelance opportunity might be a great fit for you? <br><br></strong><ul><li>Get paid for your expertise, with rates that can go up to $15/hour depending on your skills, experience, and project needs</li><li>Work fully remote on your own schedule with just a laptop and stable internet connection. </li><li>Gain hands-on experience in a unique hybrid environment where human expertise and AI agents collaborate seamlessly—a distinctive skill set in a rapidly growing field. </li><li>Exceptional performers advance to quality assurance roles or higher-priority project lines with increased compensation. Your performance directly impacts your earning potential. </li><li>Participate in performance-based bonus programs that reward high-quality work and consistent delivery</li></ul>",
+    "employmentType": "PART_TIME",
+    "hiringOrganization": {
+        "@type": "Organization",
+        "name": "Mindrift",
+        "sameAs": "https://www.linkedin.com/company/mindrift-ai",
+        "logo": "https://media.licdn.com/dms/image/v2/D4D0BAQG9ySVGr5NQzQ/company-logo_200_200/company-logo_200_200/0/1725448348201/mindrift_ai_logo?e=2147483647&v=beta&t=H-jWqqKMUVSWptGCovHAht21l0ethjGcg15R2-NwW40"
+    },
+    "identifier": {
+        "@type": "PropertyValue",
+        "name": "Mindrift",
+        "value": "135E72456C"
+    },
+    "image": "https://media.licdn.com/dms/image/v2/D4D0BAQG9ySVGr5NQzQ/company-logo_100_100/company-logo_100_100/0/1725448348201/mindrift_ai_logo?e=2147483647&v=beta&t=QWIMS9k-I4kkSKVcx06uFCRLdHDZZ1w9E8dWeBmOHCk",
+    "industry": "Servicios y consultoría de TI",
+    "jobLocation": {
+        "@type": "Place",
+        "address": {
+            "@type": "PostalAddress",
+            "addressCountry": "ES",
+            "addressLocality": "Madrid",
+            "addressRegion": null,
+            "streetAddress": null
+        },
+        "latitude": 40.41669,
+        "longitude": -3.7003455
+    },
+    "skills": "",
+    "title": "AI Pilot Vibe Coding Assistant",
+    "validThrough": "2026-06-08T07:03:22.000Z",
+    "educationRequirements": {
+        "@type": "EducationalOccupationalCredential",
+        "credentialCategory": "associate degree"
+    },
+    "experienceRequirements": {
+        "@type": "OccupationalExperienceRequirements",
+        "monthsOfExperience": 12
+    },
+    "jobLocationType": "TELECOMMUTE",
+    "applicantLocationRequirements": {
+        "@type": "Country",
+        "name": "Madrid, Comunidad de Madrid, España"
+    }
+}
