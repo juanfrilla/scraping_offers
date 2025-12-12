@@ -4,7 +4,7 @@ import re
 import curl_cffi as requests
 
 from logger import get_logger
-from utils import normalize_string, read_json
+from utils import determine_modality, keyword_counter, normalize_string, read_json
 
 
 class EmpleateScraper:
@@ -52,6 +52,7 @@ class EmpleateScraper:
             url = doc.get("url", "")
             date_posted_str = doc.get("fechaCreacionPortal", "")
             platform = doc.get("entitytype")
+            description = doc.get("contenido", "")
             records.append(
                 {
                     "title": title,
@@ -60,6 +61,8 @@ class EmpleateScraper:
                     "url": url,
                     "date_posted": date_posted_str,
                     "platform": platform,
+                    "modality": determine_modality(title, doc.get("contenido", "")),
+                    "keywords": keyword_counter(description),
                 }
             )
         return records

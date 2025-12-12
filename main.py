@@ -1,7 +1,8 @@
 import os
-from datetime import date, datetime
+from datetime import date
 
 import streamlit as st
+from dateutil.parser import isoparse
 
 from constants import DATA_FILE, LOG_DIR
 from logger import get_logger
@@ -9,7 +10,7 @@ from scrapers.empleate import EmpleateScraper
 from scrapers.infojobs import InfoJobsScraper
 from scrapers.linkedin import LinkedinScraper
 from utils import (
-    convert_datetime_str_to_other_format,
+    convert_isodatetime_str_to_other_format,
     last_scraped_today,
     read_json,
     save_json,
@@ -18,7 +19,7 @@ from utils import (
 
 
 def scrape_everything():
-    scrapers = [EmpleateScraper, LinkedinScraper, InfoJobsScraper]
+    scrapers = [EmpleateScraper, InfoJobsScraper, LinkedinScraper]
     job_posts = []
     for ScraperClass in scrapers:
         scraper = ScraperClass()
@@ -45,15 +46,14 @@ if __name__ == "__main__":
     locations = sorted(list({job.get("location", "N/A") for job in jobs}))
     companies = sorted(list({job.get("company", "N/A") for job in jobs}))
     platforms = sorted(list({job.get("platform", "N/A") for job in jobs}))
+    modalities = sorted(list({job.get("modality", "N/A") for job in jobs}))
 
     st.sidebar.header("Filters")
     selected_location = st.sidebar.selectbox("Location", ["All"] + locations)
     selected_company = st.sidebar.selectbox("Company", ["All"] + companies)
     selected_platform = st.sidebar.selectbox("Platform", ["All"] + platforms)
-    job_dates = [
-        datetime.strptime(job["date_posted"], "%Y-%m-%dT%H:%M:%SZ").date()
-        for job in jobs
-    ]
+    selected_modality = st.sidebar.selectbox("Modality", ["All"] + modalities)
+    job_dates = [isoparse(job["date_posted"]).date() for job in jobs]
     min_date = min(job_dates) if job_dates else date.today()
     max_date = max(job_dates) if job_dates else date.today()
     date_range = st.sidebar.date_input(
@@ -77,19 +77,13 @@ if __name__ == "__main__":
         and (selected_platform == "All" or job.get("platform") == selected_platform)
         and (
             (not start_date or not end_date)
-            or (
-                start_date
-                <= datetime.strptime(
-                    job.get("date_posted"), "%Y-%m-%dT%H:%M:%SZ"
-                ).date()
-                <= end_date
-            )
+            or (start_date <= isoparse(job["date_posted"]).date() <= end_date)
         )
     ]
 
     sorted_jobs_by_datetime = sorted(
         filtered_jobs,
-        key=lambda x: datetime.strptime(x["date_posted"], "%Y-%m-%dT%H:%M:%SZ"),
+        key=lambda x: isoparse(x["date_posted"]),
         reverse=True,
     )
     st.title(f"Web Scraping Offers in Spain ({len(sorted_jobs_by_datetime)} results)")
@@ -100,17 +94,18 @@ if __name__ == "__main__":
 
             col1, col2 = st.columns([3, 1])
 
-            date_posted = convert_datetime_str_to_other_format(
+            date_posted = convert_isodatetime_str_to_other_format(
                 job.get("date_posted", "N/A"),
-                "%Y-%m-%dT%H:%M:%SZ",
                 "%d/%m/%Y",
             )
 
             with col1:
                 st.write(f"🏢**Company:** {job.get('company', 'N/A')}")
                 st.write(f"📍**Location:** {job.get('location', 'N/A')}")
+                st.write(f"💼**Modality:** {job.get('modality', 'N/A')}")
                 st.write(f"📅**Posted:** {date_posted}")
-                st.write(f"💻**Platform:** {job.get('platform', 'N/A')}")
+                st.write(f"🌐**Platform:** {job.get('platform', 'N/A')}")
+                st.write("**Top Keywords:** " + ", ".join(job.get("keywords", [])))
 
             with col2:
                 st.markdown(

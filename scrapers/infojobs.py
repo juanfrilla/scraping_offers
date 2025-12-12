@@ -5,7 +5,7 @@ from bs4 import BeautifulSoup
 from curl_cffi import requests
 
 from logger import get_logger
-from utils import normalize_string, read_json
+from utils import determine_modality, keyword_counter, normalize_string, read_json
 
 
 class InfoJobsScraper:
@@ -75,6 +75,11 @@ class InfoJobsScraper:
             location = offer.get("city", "N/A")
             url = offer.get("link", "")
             date_posted_str = offer.get("publishedAt", "")
+            description = offer.get("description", "")
+            modality = offer.get("teleworking") or determine_modality(
+                title, description
+            )
+            keywords = keyword_counter(description)
             records.append(
                 {
                     "title": title,
@@ -82,10 +87,21 @@ class InfoJobsScraper:
                     "location": self.determine_location(location),
                     "url": url,
                     "date_posted": date_posted_str,
+                    "modality": self.determine_modality(modality),
                     "platform": "INFOJOBS",
+                    "keywords": keywords,
                 }
             )
         return records
+
+    def determine_modality(self, modality: str) -> str:
+        modality_map = {
+            "Remoto": "Remote",
+            "Híbrido": "Hybrid",
+            "Presencial": "On-site",
+            "Solo teletrabajo": "Remote",
+        }
+        return modality_map.get(modality, "N/A")
 
     def determine_location(self, location: str) -> str:
         locations = {

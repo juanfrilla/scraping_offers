@@ -1,6 +1,10 @@
 import json
 import os
-from datetime import date, datetime
+import re
+from collections import Counter
+from datetime import date
+
+from dateutil.parser import isoparse
 
 from constants import LAST_SCRAPED_FILE
 
@@ -56,8 +60,46 @@ def normalize_string(s: str) -> str:
     return s.title().strip()
 
 
-def convert_datetime_str_to_other_format(
-    entry_datetime: str, input_format: str, output_format: str
+def convert_isodatetime_str_to_other_format(
+    entry_datetime: str, output_format: str
 ) -> str:
-    dt = datetime.strptime(entry_datetime, input_format)
+    dt = isoparse(entry_datetime)
     return dt.strftime(output_format)
+
+
+def determine_modality(title: str, description: str) -> str:
+    title_lower = title.lower()
+    description_lower = description.lower()
+
+    if (
+        "remote" in title_lower
+        or "remote" in description_lower
+        or "remoto" in title_lower
+        or "remoto" in description_lower
+    ):
+        return "Remote"
+    elif (
+        "hybrid" in title_lower
+        or "hybrid" in description_lower
+        or "híbrido" in title_lower
+        or "híbrido" in description_lower
+    ):
+        return "Hybrid"
+    elif (
+        "on-site" in title_lower
+        or "on-site" in description_lower
+        or "presencial" in title_lower
+        or "presencial" in description_lower
+    ):
+        return "On-site"
+    else:
+        return "N/A"
+
+
+def keyword_counter(text, min_length=5):
+    text = text.lower()
+    words = re.findall(r"[a-zA-Z]+", text)
+    filtered = [w for w in words if len(w) >= min_length]
+    counts = Counter(filtered)
+    sorted_keywords = sorted(counts.items(), key=lambda x: x[1], reverse=True)
+    return [keyword for keyword, _ in sorted_keywords[:4]]

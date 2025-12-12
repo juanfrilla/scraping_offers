@@ -5,7 +5,7 @@ import curl_cffi as requests
 from bs4 import BeautifulSoup
 
 from logger import get_logger
-from utils import load_html, normalize_string
+from utils import determine_modality, keyword_counter, load_html, normalize_string
 
 
 class LinkedinScraper:
@@ -61,24 +61,10 @@ class LinkedinScraper:
         for job_id, job in enumerate(job_list):
             url = job.select_one("a")["href"].strip()
             self.logger.info(f"Parsing job posting {job_id + 1}/{len(job_list)}")
-            title = job.select_one("h3").text.strip()
-            if "**" not in title:
-                company = job.select_one("h4").text.strip()
-                location = job.select_one("span.job-search-card__location").text.strip()
-
-                date_posted_str = job.select_one("time")["datetime"].strip()
-            else:
-                self.logger.info(
-                    " ** appears in title, entering offer page to get full details"
-                )
-                offer_response = self.linkedin_entering_offer_request(url)
-                offer_soup = BeautifulSoup(offer_response.text, "html.parser")
-                script_tag = offer_soup.find("script", type="application/ld+json")
-                if not script_tag:
-                    self.logger.info(
-                        "No script tag with type application/ld+json found"
-                    )
-                    continue
+            offer_response = self.linkedin_entering_offer_request(url)
+            offer_soup = BeautifulSoup(offer_response.text, "html.parser")
+            script_tag = offer_soup.find("script", type="application/ld+json")
+            if script_tag:
                 raw_json_content = script_tag.string
                 json_content = self.json_from_ld(raw_json_content)
                 title = json_content.get("title", "N/A")
@@ -89,14 +75,40 @@ class LinkedinScraper:
                     .get("addressLocality", "N/A")
                 )
                 date_posted_str = json_content.get("datePosted", "")
+                description = json_content.get("description", "")
+                modality = determine_modality(title, description)
+            else:
+                title = (
+                    offer_soup.find("h1", class_="topcard__title").get_text().strip()
+                )
+                company = (
+                    offer_soup.find("a", class_="topcard__org-name-link")
+                    .get_text()
+                    .strip()
+                )
+                location = (
+                    offer_soup.find("span", class_="topcard__flavor--bullet")
+                    .get_text()
+                    .strip()
+                )
+                raw_date_posted_str = offer_soup.find("time")["datetime"].strip()
+                date_posted_str = f"{raw_date_posted_str}T00:00:00Z"
+                description = (
+                    offer_soup.find("div", class_="description__text")
+                    .get_text()
+                    .strip()
+                )
+                modality = determine_modality(title, description)
             records.append(
                 {
                     "title": title,
                     "company": normalize_string(company),
                     "location": self.determine_location(location),
                     "url": url,
-                    "date_posted": f"{date_posted_str}T00:00:00Z",
+                    "date_posted": date_posted_str,
+                    "modality": modality,
                     "platform": "LINKEDIN",
+                    "keywords": keyword_counter(description),
                 }
             )
 
@@ -107,6 +119,7 @@ class LinkedinScraper:
             "Sevilla La Nueva": "Sevilla",
             "Comunidad De Madrid, España": "Madrid",
             "Valencia/València": "Valencia",
+            "Alcobendas": "Madrid",
         }
         location_lower = location.lower()
         if location_lower.endswith("y alrededores"):
