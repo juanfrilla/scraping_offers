@@ -37,22 +37,24 @@ class LinkedinScraper:
 
     def linkedin_entering_offer_request(self, offer_url: str):
         burp0_headers = {
-            "Sec-Ch-Ua": '"Chromium";v="131", "Not A(Brand";v="24"',
-            "Sec-Ch-Ua-Mobile": "?0",
-            "Sec-Ch-Ua-Platform": '"Windows"',
+            "User-Agent": (
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:135.0) "
+                "Gecko/20100101 Firefox/135.0"
+            ),
+            "Accept": (
+                "text/html,application/xhtml+xml,application/xml;"
+                "q=0.9,image/avif,image/webp,*/*;q=0.8"
+            ),
             "Accept-Language": "es-ES,es;q=0.9",
+            "Accept-Encoding": "gzip, deflate, br, zstd",
             "Upgrade-Insecure-Requests": "1",
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
-            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
             "Sec-Fetch-Site": "none",
             "Sec-Fetch-Mode": "navigate",
             "Sec-Fetch-User": "?1",
             "Sec-Fetch-Dest": "document",
-            "Accept-Encoding": "gzip, deflate, br",
-            "Priority": "u=0, i",
         }
         return self.session.get(
-            offer_url, headers=burp0_headers, impersonate="chrome131"
+            offer_url, headers=burp0_headers, impersonate="firefox135"
         )
 
     def parse(self, html_content: str) -> list:
