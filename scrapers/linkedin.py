@@ -1,6 +1,7 @@
 import html
 import json
 import random
+import time
 
 import curl_cffi as requests
 from bs4 import BeautifulSoup
@@ -11,7 +12,6 @@ from utils import (
     keyword_counter,
     load_html,
     normalize_string,
-    save_html,
 )
 
 
@@ -19,8 +19,9 @@ class LinkedinScraper:
     def __init__(self):
         self.logger = get_logger("linkedin_scraper")
         self.session = requests.Session()
+        self.profile = self.get_profile()
 
-    def make_request(self, url: str):
+    def get_profile(self):
         profiles = [
             {
                 "impersonate": "firefox135",
@@ -111,12 +112,50 @@ class LinkedinScraper:
         ]
 
         profile = random.choice(profiles)
-
-        return self.session.get(
-            url,
-            headers=profile["headers"],
-            impersonate=profile["impersonate"],
+        self.logger.info(
+            f"Selected LinkedIn profile for scraping is {profile.get('impersonate')}."
         )
+        return profile
+
+    def make_request(self, url: str, max_retries: int = 5):
+        retries = 0
+
+        while retries < max_retries:
+            try:
+                response = self.session.get(
+                    url,
+                    headers=self.profile["headers"],
+                    impersonate=self.profile.get("impersonate"),
+                )
+
+                if response.status_code == 429:
+                    # Too many requests, wait and regenerate profile
+                    wait = random.randint(1, 5)
+                    self.logger.info(
+                        f"Rate limited. Generating new profile, waiting {wait} seconds..."
+                    )
+                    time.sleep(wait)
+                    self.profile = self.get_profile()
+                    self.session.cookies = {}
+                    self.linkedin_jobsearch_request()
+                    retries += 1
+                    continue  # retry the request with new profile
+
+                # Success or other status code
+                return response
+
+            except requests.RequestException as e:
+                # Handle network errors
+                wait = random.randint(1, 5)
+                self.logger.warning(
+                    f"Request failed ({e}), retrying in {wait} seconds..."
+                )
+                time.sleep(wait)
+                retries += 1
+
+        # Max retries exceeded
+        self.logger.error(f"Failed to fetch {url} after {max_retries} retries.")
+        return None
 
     def linkedin_jobsearch_request(self):
         url = "https://www.linkedin.com/jobs/search/?currentJobId=4347732846&distance=25.0&geoId=105646813&keywords=%22scraping%22&origin=HISTORY"
@@ -127,15 +166,15 @@ class LinkedinScraper:
         job_list = soup.select("ul.jobs-search__results-list > li")
         self.logger.info(f"Found {len(job_list)} job postings on the page.")
 
-        if len(job_list) > 7:
-            self.logger.info(
-                f"Found {len(job_list)} job postings, saving HTML for review."
-            )
-            save_html(
-                html_content,
-                "linkedin_jobsearch_more_offers.html",
-            )
-            print()
+        # if len(job_list) > 7:
+        #     self.logger.info(
+        #         f"Found {len(job_list)} job postings, saving HTML for review."
+        #     )
+        #     save_html(
+        #         html_content,
+        #         "linkedin_jobsearch_more_offers.html",
+        #     )
+        #     print()
 
         records = []
 
@@ -222,5 +261,5 @@ class LinkedinScraper:
         return jobs
 
     def scrape_test(self):
-        html_content = load_html("./seed/linkedin_jobsearch.html")
+        html_content = load_html("./seed/linkedin_jobsearch_more_offers.html")
         return self.parse(html_content)
