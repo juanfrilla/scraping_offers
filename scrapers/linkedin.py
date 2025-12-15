@@ -13,8 +13,7 @@ class LinkedinScraper:
         self.logger = get_logger("linkedin_scraper")
         self.session = requests.Session()
 
-    def linkedin_jobsearch_request(self):
-        url = "https://www.linkedin.com/jobs/search/?currentJobId=4341337179&distance=25&geoId=105646813&keywords=%22scraping%22&origin=JOB_SEARCH_PAGE_QUERY_EXPANSION"
+    def make_request(self, url: str):
         burp0_headers = {
             "User-Agent": (
                 "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:135.0) "
@@ -35,27 +34,9 @@ class LinkedinScraper:
 
         return self.session.get(url, headers=burp0_headers, impersonate="firefox135")
 
-    def linkedin_entering_offer_request(self, offer_url: str):
-        burp0_headers = {
-            "User-Agent": (
-                "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:135.0) "
-                "Gecko/20100101 Firefox/135.0"
-            ),
-            "Accept": (
-                "text/html,application/xhtml+xml,application/xml;"
-                "q=0.9,image/avif,image/webp,*/*;q=0.8"
-            ),
-            "Accept-Language": "es-ES,es;q=0.9",
-            "Accept-Encoding": "gzip, deflate, br, zstd",
-            "Upgrade-Insecure-Requests": "1",
-            "Sec-Fetch-Site": "none",
-            "Sec-Fetch-Mode": "navigate",
-            "Sec-Fetch-User": "?1",
-            "Sec-Fetch-Dest": "document",
-        }
-        return self.session.get(
-            offer_url, headers=burp0_headers, impersonate="firefox135"
-        )
+    def linkedin_jobsearch_request(self):
+        url = "https://www.linkedin.com/jobs/search?keywords=%22scraping%22"
+        return self.make_request(url)
 
     def parse(self, html_content: str) -> list:
         soup = BeautifulSoup(html_content, "html.parser")
@@ -66,7 +47,7 @@ class LinkedinScraper:
         for job_id, job in enumerate(job_list):
             url = job.select_one("a")["href"].strip()
             self.logger.info(f"Parsing job posting {job_id + 1}/{len(job_list)}")
-            offer_response = self.linkedin_entering_offer_request(url)
+            offer_response = self.make_request(url)
             offer_soup = BeautifulSoup(offer_response.text, "html.parser")
             script_tag = offer_soup.find("script", type="application/ld+json")
             if script_tag:
