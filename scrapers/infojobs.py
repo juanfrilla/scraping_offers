@@ -104,9 +104,7 @@ class InfoJobsScraper:
         return modality_map.get(modality, "N/A")
 
     def determine_location(self, location: str) -> str:
-        locations = {
-            "San Sebastián De Los Reyes": "Madrid",
-        }
+        locations = {"San Sebastián De Los Reyes": "Madrid", "Sabadell": "Barcelona"}
         location_lower = location.lower()
         normalized = normalize_string(location_lower)
         return locations.get(normalized, normalized)
