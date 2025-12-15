@@ -1,11 +1,18 @@
 import html
 import json
+import random
 
 import curl_cffi as requests
 from bs4 import BeautifulSoup
 
 from logger import get_logger
-from utils import determine_modality, keyword_counter, load_html, normalize_string
+from utils import (
+    determine_modality,
+    keyword_counter,
+    load_html,
+    normalize_string,
+    save_html,
+)
 
 
 class LinkedinScraper:
@@ -14,33 +21,121 @@ class LinkedinScraper:
         self.session = requests.Session()
 
     def make_request(self, url: str):
-        burp0_headers = {
-            "User-Agent": (
-                "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:135.0) "
-                "Gecko/20100101 Firefox/135.0"
-            ),
-            "Accept": (
-                "text/html,application/xhtml+xml,application/xml;"
-                "q=0.9,image/avif,image/webp,*/*;q=0.8"
-            ),
-            "Accept-Language": "es-ES,es;q=0.9",
-            "Accept-Encoding": "gzip, deflate, br, zstd",
-            "Upgrade-Insecure-Requests": "1",
-            "Sec-Fetch-Site": "none",
-            "Sec-Fetch-Mode": "navigate",
-            "Sec-Fetch-User": "?1",
-            "Sec-Fetch-Dest": "document",
-        }
+        profiles = [
+            {
+                "impersonate": "firefox135",
+                "headers": {
+                    "User-Agent": (
+                        "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:135.0) "
+                        "Gecko/20100101 Firefox/135.0"
+                    ),
+                    "Accept": (
+                        "text/html,application/xhtml+xml,application/xml;"
+                        "q=0.9,image/avif,image/webp,*/*;q=0.8"
+                    ),
+                    "Accept-Language": "es-ES,es;q=0.9",
+                    "Accept-Encoding": "gzip, deflate, br, zstd",
+                    "Upgrade-Insecure-Requests": "1",
+                    "Sec-Fetch-Site": "none",
+                    "Sec-Fetch-Mode": "navigate",
+                    "Sec-Fetch-User": "?1",
+                    "Sec-Fetch-Dest": "document",
+                },
+            },
+            {
+                "impersonate": "chrome131",
+                "headers": {
+                    "User-Agent": (
+                        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                        "AppleWebKit/537.36 (KHTML, like Gecko) "
+                        "Chrome/131.0.0.0 Safari/537.36"
+                    ),
+                    "Accept": (
+                        "text/html,application/xhtml+xml,application/xml;"
+                        "q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8"
+                    ),
+                    "Accept-Language": "es-ES,es;q=0.9",
+                    "Accept-Encoding": "gzip, deflate, br, zstd",
+                    "Upgrade-Insecure-Requests": "1",
+                    "Sec-Fetch-Site": "none",
+                    "Sec-Fetch-Mode": "navigate",
+                    "Sec-Fetch-User": "?1",
+                    "Sec-Fetch-Dest": "document",
+                    "Sec-CH-UA": '"Chromium";v="131", "Not_A Brand";v="24"',
+                    "Sec-CH-UA-Mobile": "?0",
+                    "Sec-CH-UA-Platform": '"Windows"',
+                },
+            },
+            {
+                "impersonate": "safari260",
+                "headers": {
+                    "User-Agent": (
+                        "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_0) "
+                        "AppleWebKit/605.1.15 (KHTML, like Gecko) "
+                        "Version/16.6 Safari/260.0"
+                    ),
+                    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+                    "Accept-Language": "es-ES,es;q=0.9",
+                    "Accept-Encoding": "gzip, deflate, br, zstd",
+                    "Upgrade-Insecure-Requests": "1",
+                    "Sec-Fetch-Site": "none",
+                    "Sec-Fetch-Mode": "navigate",
+                    "Sec-Fetch-User": "?1",
+                    "Sec-Fetch-Dest": "document",
+                },
+            },
+            {
+                "impersonate": "chrome131_android",
+                "headers": {
+                    "User-Agent": (
+                        "Mozilla/5.0 (Linux; Android 14; Pixel 7) "
+                        "AppleWebKit/537.36 (KHTML, like Gecko) "
+                        "Chrome/131.0.0.0 Mobile Safari/537.36"
+                    ),
+                    "Accept": (
+                        "text/html,application/xhtml+xml,application/xml;"
+                        "q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8"
+                    ),
+                    "Accept-Language": "es-ES,es;q=0.9",
+                    "Accept-Encoding": "gzip, deflate, br, zstd",
+                    "Upgrade-Insecure-Requests": "1",
+                    "Sec-Fetch-Site": "none",
+                    "Sec-Fetch-Mode": "navigate",
+                    "Sec-Fetch-User": "?1",
+                    "Sec-Fetch-Dest": "document",
+                    "Sec-CH-UA": '"Chromium";v="131", "Not_A Brand";v="24"',
+                    "Sec-CH-UA-Mobile": "?1",
+                    "Sec-CH-UA-Platform": '"Android"',
+                },
+            },
+        ]
 
-        return self.session.get(url, headers=burp0_headers, impersonate="firefox135")
+        profile = random.choice(profiles)
+
+        return self.session.get(
+            url,
+            headers=profile["headers"],
+            impersonate=profile["impersonate"],
+        )
 
     def linkedin_jobsearch_request(self):
-        url = "https://www.linkedin.com/jobs/search?keywords=%22scraping%22"
+        url = "https://www.linkedin.com/jobs/search/?currentJobId=4347732846&distance=25.0&geoId=105646813&keywords=%22scraping%22&origin=HISTORY"
         return self.make_request(url)
 
     def parse(self, html_content: str) -> list:
         soup = BeautifulSoup(html_content, "html.parser")
         job_list = soup.select("ul.jobs-search__results-list > li")
+        self.logger.info(f"Found {len(job_list)} job postings on the page.")
+
+        if len(job_list) > 7:
+            self.logger.info(
+                f"Found {len(job_list)} job postings, saving HTML for review."
+            )
+            save_html(
+                html_content,
+                "linkedin_jobsearch_more_offers.html",
+            )
+            print()
 
         records = []
 
