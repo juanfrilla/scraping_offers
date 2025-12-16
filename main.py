@@ -19,7 +19,7 @@ from utils import (
 
 
 def scrape_everything():
-    scrapers = [LinkedinScraper]
+    scrapers = [LinkedinScraper, InfoJobsScraper, EmpleateScraper]
     job_posts = []
     for ScraperClass in scrapers:
         scraper = ScraperClass()
