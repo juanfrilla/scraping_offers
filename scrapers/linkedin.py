@@ -26,21 +26,55 @@ class LinkedinScraper:
             {
                 "impersonate": "firefox135",
                 "headers": {
-                    "User-Agent": (
-                        "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:135.0) "
-                        "Gecko/20100101 Firefox/135.0"
-                    ),
-                    "Accept": (
-                        "text/html,application/xhtml+xml,application/xml;"
-                        "q=0.9,image/avif,image/webp,*/*;q=0.8"
-                    ),
-                    "Accept-Language": "es-ES,es;q=0.9",
+                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:133.0) Gecko/20100101 Firefox/135.0",
+                    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+                    "Accept-Language": "en-US,en;q=0.9",
                     "Accept-Encoding": "gzip, deflate, br, zstd",
                     "Upgrade-Insecure-Requests": "1",
                     "Sec-Fetch-Site": "none",
                     "Sec-Fetch-Mode": "navigate",
                     "Sec-Fetch-User": "?1",
                     "Sec-Fetch-Dest": "document",
+                },
+            },
+            {
+                "impersonate": "firefox133",
+                "headers": {
+                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:133.0) Gecko/20100101 Firefox/133.0",
+                    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+                    "Accept-Language": "en-US,en;q=0.9",
+                    "Accept-Encoding": "gzip, deflate, br, zstd",
+                    "Upgrade-Insecure-Requests": "1",
+                    "Sec-Fetch-Site": "none",
+                    "Sec-Fetch-Mode": "navigate",
+                    "Sec-Fetch-User": "?1",
+                    "Sec-Fetch-Dest": "document",
+                },
+            },
+            {
+                "impersonate": "chrome99_android",
+                "headers": {
+                    "User-Agent": "Mozilla/5.0 (Linux; Android 12; Pixel 5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.73 Mobile Safari/537.36",
+                    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+                    "Accept-Language": "en-US,en;q=0.9",
+                    "Accept-Encoding": "gzip, deflate, br",
+                },
+            },
+            {
+                "impersonate": "chrome99",
+                "headers": {
+                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.0.0 Safari/537.36",
+                    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
+                    "Accept-Language": "en-US,en;q=0.9",
+                    "Accept-Encoding": "gzip, deflate, br, zstd",
+                    "Upgrade-Insecure-Requests": "1",
+                    "Sec-Fetch-Site": "none",
+                    "Sec-Fetch-Mode": "navigate",
+                    "Sec-Fetch-User": "?1",
+                    "Sec-Fetch-Dest": "document",
+                    "Sec-CH-UA": '"Chromium";v="99","Google Chrome";v="99","Not=A?Brand";v="99"',
+                    "Sec-CH-UA-Mobile": "?0",
+                    "Sec-CH-UA-Platform": '"Windows"',
                 },
             },
         ]
