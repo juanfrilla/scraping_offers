@@ -1,5 +1,5 @@
 import os
-from datetime import date
+from datetime import date, datetime, timezone
 
 import streamlit as st
 from dateutil.parser import isoparse
@@ -10,7 +10,6 @@ from scrapers.empleate import EmpleateScraper
 from scrapers.infojobs import InfoJobsScraper
 from scrapers.linkedin import LinkedinScraper
 from utils import (
-    convert_isodatetime_str_to_other_format,
     last_scraped_today,
     read_json,
     save_json,
@@ -89,15 +88,27 @@ if __name__ == "__main__":
     st.title(f"Web Scraping Offers in Spain ({len(sorted_jobs_by_datetime)} results)")
 
     for job in sorted_jobs_by_datetime:
+        raw_date = job.get("date_posted")
+
+        is_new = False
+        date_posted = "N/A"
+
+        if raw_date:
+            posted_dt = isoparse(raw_date)
+            now = datetime.now(timezone.utc)
+
+        is_new = (now - posted_dt).days < 3
+        date_posted = posted_dt.strftime("%d/%m/%Y")
         with st.container():
-            st.subheader(job.get("title", "No title"))
+            title = job.get("title", "No title")
+            date_posted = posted_dt.strftime("%d/%m/%Y")
+
+            if is_new:
+                st.subheader(f"{title} 🆕")
+            else:
+                st.subheader(title)
 
             col1, col2 = st.columns([3, 1])
-
-            date_posted = convert_isodatetime_str_to_other_format(
-                job.get("date_posted", "N/A"),
-                "%d/%m/%Y",
-            )
 
             with col1:
                 st.write(f"🏢**Company:** {job.get('company', 'N/A')}")
@@ -113,5 +124,3 @@ if __name__ == "__main__":
                 )
 
         st.write("---")
-
-# TODO cuando te flagean rotas, headers y impersonate

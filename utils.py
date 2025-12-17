@@ -59,14 +59,6 @@ def update_last_scraped() -> None:
 def normalize_string(s: str) -> str:
     return s.title().strip()
 
-
-def convert_isodatetime_str_to_other_format(
-    entry_datetime: str, output_format: str
-) -> str:
-    dt = isoparse(entry_datetime)
-    return dt.strftime(output_format)
-
-
 def determine_modality(title: str, description: str) -> str:
     title_lower = title.lower()
     description_lower = description.lower()
