@@ -160,26 +160,17 @@ class LinkedinScraper:
                 description = json_content.get("description", "")
                 modality = determine_modality(title, description)
             else:
-                title = (
-                    offer_soup.find("h1", class_="topcard__title").get_text().strip()
-                )
-                company = (
-                    offer_soup.find("a", class_="topcard__org-name-link")
-                    .get_text()
-                    .strip()
-                )
-                location = (
-                    offer_soup.find("span", class_="topcard__flavor--bullet")
-                    .get_text()
-                    .strip()
-                )
+                raw_title = offer_soup.find("h1", class_="topcard__title")
+                title = self.get_text(raw_title)
+                raw_company = offer_soup.find("a", class_="topcard__org-name-link")
+                company = self.get_text(raw_company)
+                raw_location = offer_soup.find("span", class_="topcard__flavor--bullet")
+                location = self.get_text(raw_location)
                 raw_date_posted_str = offer_soup.find("time")["datetime"].strip()
                 date_posted_str = f"{raw_date_posted_str}T00:00:00Z"
-                description = (
-                    offer_soup.find("div", class_="description__text")
-                    .get_text()
-                    .strip()
-                )
+                raw_description = offer_soup.find("div", class_="description__text")
+                description = self.get_text(raw_description)
+
                 modality = determine_modality(title, description)
             records.append(
                 {
@@ -195,6 +186,11 @@ class LinkedinScraper:
             )
 
         return records
+
+    def get_text(self, soup: BeautifulSoup) -> str:
+        if soup:
+            return soup.get_text().strip()
+        return ""
 
     def determine_location(self, location: str) -> str:
         locations = {
