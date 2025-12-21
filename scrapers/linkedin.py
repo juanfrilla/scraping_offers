@@ -19,71 +19,77 @@ class LinkedinScraper:
     def __init__(self):
         self.logger = get_logger("linkedin_scraper")
         self.session = requests.Session()
-        self.profile = self.get_profile()
 
-    def get_profile(self):
-        profiles = [
-            {
-                "impersonate": "firefox135",
-                "headers": {
-                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:133.0) Gecko/20100101 Firefox/135.0",
-                    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
-                    "Accept-Language": "en-US,en;q=0.9",
-                    "Accept-Encoding": "gzip, deflate, br, zstd",
-                    "Upgrade-Insecure-Requests": "1",
-                    "Sec-Fetch-Site": "none",
-                    "Sec-Fetch-Mode": "navigate",
-                    "Sec-Fetch-User": "?1",
-                    "Sec-Fetch-Dest": "document",
-                },
-            },
-            {
-                "impersonate": "firefox133",
-                "headers": {
-                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:133.0) Gecko/20100101 Firefox/133.0",
-                    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
-                    "Accept-Language": "en-US,en;q=0.9",
-                    "Accept-Encoding": "gzip, deflate, br, zstd",
-                    "Upgrade-Insecure-Requests": "1",
-                    "Sec-Fetch-Site": "none",
-                    "Sec-Fetch-Mode": "navigate",
-                    "Sec-Fetch-User": "?1",
-                    "Sec-Fetch-Dest": "document",
-                },
-            },
-            {
-                "impersonate": "chrome99_android",
-                "headers": {
-                    "User-Agent": "Mozilla/5.0 (Linux; Android 12; Pixel 5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.73 Mobile Safari/537.36",
-                    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
-                    "Accept-Language": "en-US,en;q=0.9",
-                    "Accept-Encoding": "gzip, deflate, br",
-                },
-            },
-            {
-                "impersonate": "chrome99",
-                "headers": {
-                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.0.0 Safari/537.36",
-                    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
-                    "Accept-Language": "en-US,en;q=0.9",
-                    "Accept-Encoding": "gzip, deflate, br, zstd",
-                    "Upgrade-Insecure-Requests": "1",
-                    "Sec-Fetch-Site": "none",
-                    "Sec-Fetch-Mode": "navigate",
-                    "Sec-Fetch-User": "?1",
-                    "Sec-Fetch-Dest": "document",
-                    "Sec-CH-UA": '"Chromium";v="99","Google Chrome";v="99","Not=A?Brand";v="99"',
-                    "Sec-CH-UA-Mobile": "?0",
-                    "Sec-CH-UA-Platform": '"Windows"',
-                },
-            },
+        self.IMPERSONATE_LIST = [
+            # Chrome Desktop
+            "chrome99",
+            "chrome100",
+            "chrome101",
+            "chrome104",
+            "chrome107",
+            "chrome110",
+            "chrome116",
+            "chrome119",
+            "chrome120",
+            "chrome123",
+            "chrome124",
+            "chrome131",
+            "chrome133a",
+            "chrome136",
+            # Chrome Android
+            "chrome99_android",
+            "chrome131_android",
+            # Edge
+            "edge99",
+            "edge101",
+            # Safari Desktop
+            "safari153",
+            "safari155",
+            "safari170",
+            "safari180",
+            "safari184",
+            "safari260",
+            # Safari iOS
+            "safari172_ios",
+            "safari180_ios",
+            "safari184_ios",
+            "safari260_ios",
+            # Firefox
+            "firefox133",
+            "firefox135",
+            # Tor
+            "tor145",
         ]
 
-        profile = random.choice(profiles)
+    def find_profile_and_retrieve_first_html(self):
+        for prof_id, impersonate in enumerate(self.IMPERSONATE_LIST):
+            self.logger.info(
+                f"Iterating through profile {prof_id}/{len(self.IMPERSONATE_LIST)}"
+            )
+            self.logger.info(f"using {impersonate}")
+            self.impersonate = impersonate
+
+            response = self.linkedin_jobsearch_request()
+            soup = BeautifulSoup(response.text, "html.parser")
+            job_list = soup.select("ul.jobs-search__results-list > li")
+            self.logger.info(f"Found {len(job_list)} job postings on the page.")
+
+            if len(job_list) > 7:
+                self.logger.info("Success!")
+                return soup
+
+            time_to_sleep = random.randint(1, 10)
+
+            self.logger.info(f"sleeping {time_to_sleep}...")
+            time.sleep(time_to_sleep)
+        return soup
+
+    def get_impersonator(self):
+        impersonate = random.choice(self.IMPERSONATE_LIST)
         self.logger.info(
-            f"Selected LinkedIn profile for scraping is {profile.get('impersonate')}."
+            f"Selected LinkedIn impersonate for scraping is {impersonate}."
         )
-        return profile
+        return impersonate
 
     def make_request(self, url: str, max_retries: int = 5):
         retries = 0
@@ -92,8 +98,7 @@ class LinkedinScraper:
             try:
                 response = self.session.get(
                     url,
-                    headers=self.profile["headers"],
-                    impersonate=self.profile.get("impersonate"),
+                    impersonate=self.impersonate,
                 )
 
                 if response.status_code == 429:
@@ -103,7 +108,7 @@ class LinkedinScraper:
                         f"Rate limited. Generating new profile, waiting {wait} seconds..."
                     )
                     time.sleep(wait)
-                    self.profile = self.get_profile()
+                    self.impersonate = self.get_impersonator()
                     self.session.cookies = {}
                     self.linkedin_jobsearch_request()
                     retries += 1
@@ -112,7 +117,7 @@ class LinkedinScraper:
                 # Success or other status code
                 return response
 
-            except requests.RequestException as e:
+            except requests.exceptions.RequestException as e:
                 # Handle network errors
                 wait = random.randint(1, 5)
                 self.logger.warning(
@@ -129,20 +134,9 @@ class LinkedinScraper:
         url = "https://www.linkedin.com/jobs/search/?currentJobId=4347732846&distance=25.0&geoId=105646813&keywords=%22scraping%22&origin=HISTORY"
         return self.make_request(url)
 
-    def parse(self, html_content: str) -> list:
-        soup = BeautifulSoup(html_content, "html.parser")
+    def parse(self, soup: BeautifulSoup) -> list:
         job_list = soup.select("ul.jobs-search__results-list > li")
         self.logger.info(f"Found {len(job_list)} job postings on the page.")
-
-        # if len(job_list) > 7:
-        #     self.logger.info(
-        #         f"Found {len(job_list)} job postings, saving HTML for review."
-        #     )
-        #     save_html(
-        #         html_content,
-        #         "linkedin_jobsearch_more_offers.html",
-        #     )
-        #     print()
 
         records = []
 
@@ -222,9 +216,8 @@ class LinkedinScraper:
 
     def scrape(self):
         self.logger.info("Starting Linkedin scraping.")
-        response = self.linkedin_jobsearch_request()
-        html_content = response.text
-        jobs = self.parse(html_content)
+        soup = self.find_profile_and_retrieve_first_html()
+        jobs = self.parse(soup)
         self.logger.info("Finished Linkedin scraping.")
         return jobs
 

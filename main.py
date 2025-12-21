@@ -6,9 +6,9 @@ from dateutil.parser import isoparse
 
 from constants import DATA_FILE, LOG_DIR
 from logger import get_logger
+from scrapers.linkedin import LinkedinScraper
 from scrapers.empleate import EmpleateScraper
 from scrapers.infojobs import InfoJobsScraper
-from scrapers.linkedin import LinkedinScraper
 from utils import (
     last_scraped_today,
     read_json,
