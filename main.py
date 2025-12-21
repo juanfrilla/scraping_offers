@@ -1,4 +1,5 @@
 import os
+import threading
 from datetime import date, datetime, timezone
 
 import streamlit as st
@@ -6,9 +7,9 @@ from dateutil.parser import isoparse
 
 from constants import DATA_FILE, LOG_DIR
 from logger import get_logger
-from scrapers.linkedin import LinkedinScraper
 from scrapers.empleate import EmpleateScraper
 from scrapers.infojobs import InfoJobsScraper
+from scrapers.linkedin import LinkedinScraper
 from utils import (
     last_scraped_today,
     read_json,
@@ -28,19 +29,27 @@ def scrape_everything():
     return job_posts
 
 
-if __name__ == "__main__":
-    os.makedirs(LOG_DIR, exist_ok=True)
-    logger = get_logger("main")
+@st.cache_resource
+def get_scraper_lock():
+    return threading.Lock()
 
-    if last_scraped_today() and os.path.exists(DATA_FILE):
-        logger.info("Data already scraped today. Loading from JSON...")
-        jobs = read_json(DATA_FILE)
-    else:
-        logger.info("Scraping new data...")
+
+@st.cache_data(ttl=86400, show_spinner=False)
+def get_jobs_data():
+    lock = get_scraper_lock()
+    with lock:
+        if last_scraped_today() and os.path.exists(DATA_FILE):
+            return read_json(DATA_FILE)
         jobs = scrape_everything()
         save_json(DATA_FILE, jobs)
         update_last_scraped()
-        logger.info("Data scraped and saved.")
+        return jobs
+
+
+with st.spinner("Scraping jobs..."):
+    os.makedirs(LOG_DIR, exist_ok=True)
+    logger = get_logger("main")
+    jobs = get_jobs_data()
 
     locations = sorted(list({job.get("location", "N/A") for job in jobs}))
     companies = sorted(list({job.get("company", "N/A") for job in jobs}))
