@@ -2,6 +2,7 @@ import html
 import json
 import random
 import time
+import urllib.parse
 
 import curl_cffi as requests
 from bs4 import BeautifulSoup
@@ -114,8 +115,19 @@ class LinkedinScraper:
         self.logger.error(f"Failed to fetch {url} after {max_retries} retries.")
         return None
 
+    def build_query(self, terms):
+        encoded = [f"%22{urllib.parse.quote(term)}%22" for term in terms]
+        return "%20OR%20".join(encoded)
+
+    def random_query(self):
+        keywords = ["scraping", "crawling", "data extraction", "data acquisition"]
+        shuffled = keywords[:]
+        random.shuffle(shuffled)
+        return self.build_query(shuffled)
+
     def linkedin_jobsearch_request(self):
-        url = "https://www.linkedin.com/jobs/search/?currentJobId=4259141519&distance=25.0&geoId=105646813&keywords=%22scraping%22%20OR%20%22crawling%22%20OR%20%22data%20extraction%22%20OR%20%22data%20acquisition%22%20OR%20%22data%20extraction%22&origin=HISTORY"
+        query_part = self.random_query()
+        url = f"https://www.linkedin.com/jobs/search/?currentJobId=4333406365&distance=25.0&geoId=105646813&keywords={query_part}&origin=JOB_SEARCH_PAGE_JOB_FILTER&sortBy=DD"
         return self.make_request(url)
 
     def parse(self, soup: BeautifulSoup) -> list:

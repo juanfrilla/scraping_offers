@@ -7,3 +7,6 @@ migrate to Rust
 # ANTES DE LA PRIMERA SUBIDA
 # TODO poener una carpeta desde la cual se leerán los datos
 # Farmeando cookies cuando te da bien, funciona linkedin pero quizas esas cookies seran invalidas cuando te banee.
+
+
+# hacer esta busqueda y si no tiene las palabras clave, la descarto scraping, crawling, acquisition, extraction, consuming
