@@ -115,7 +115,7 @@ class LinkedinScraper:
         return None
 
     def linkedin_jobsearch_request(self):
-        url = "https://www.linkedin.com/jobs/search/?geoId=105646813&keywords=%22scraping%22%20OR%20%22crawling%22%20OR%20%22data%20extraction%22%20OR%20%22data%20acquisition%22%20OR%20%22data%20extraction%22&origin=JOB_SEARCH_PAGE_JOB_FILTER&refresh=true&sortBy=R"
+        url = "https://www.linkedin.com/jobs/search/?currentJobId=4259141519&distance=25.0&geoId=105646813&keywords=%22scraping%22%20OR%20%22crawling%22%20OR%20%22data%20extraction%22%20OR%20%22data%20acquisition%22%20OR%20%22data%20extraction%22&origin=HISTORY"
         return self.make_request(url)
 
     def parse(self, soup: BeautifulSoup) -> list:
