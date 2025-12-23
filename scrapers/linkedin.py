@@ -61,28 +61,12 @@ class LinkedinScraper:
             "tor145",
         ]
 
-    def find_profile_and_retrieve_first_html(self):
-        for prof_id, impersonate in enumerate(self.IMPERSONATE_LIST):
-            self.logger.info(
-                f"Iterating through profile {prof_id}/{len(self.IMPERSONATE_LIST)}"
-            )
-            self.logger.info(f"using {impersonate}")
-            self.impersonate = impersonate
-
-            response = self.linkedin_jobsearch_request()
-            soup = BeautifulSoup(response.text, "html.parser")
-            job_list = soup.select("ul.jobs-search__results-list > li")
-            self.logger.info(f"Found {len(job_list)} job postings on the page.")
-
-            if len(job_list) > 7:
-                self.logger.info("Success!")
-                return soup
-
-            time_to_sleep = random.randint(1, 10)
-
-            self.logger.info(f"sleeping {time_to_sleep}...")
-            time.sleep(time_to_sleep)
-        return soup
+    def retrieve_offers(self) -> BeautifulSoup:
+        impersonate = self.get_impersonator()
+        self.logger.info(f"using {impersonate}")
+        self.impersonate = impersonate
+        response = self.linkedin_jobsearch_request()
+        return BeautifulSoup(response.text, "html.parser")
 
     def get_impersonator(self):
         impersonate = random.choice(self.IMPERSONATE_LIST)
@@ -131,7 +115,7 @@ class LinkedinScraper:
         return None
 
     def linkedin_jobsearch_request(self):
-        url = "https://www.linkedin.com/jobs/search/?currentJobId=4347732846&distance=25.0&geoId=105646813&keywords=%22scraping%22&origin=HISTORY"
+        url = "https://www.linkedin.com/jobs/search/?geoId=105646813&keywords=%22scraping%22%20OR%20%22crawling%22%20OR%20%22data%20extraction%22%20OR%20%22data%20acquisition%22%20OR%20%22data%20extraction%22&origin=JOB_SEARCH_PAGE_JOB_FILTER&refresh=true&sortBy=R"
         return self.make_request(url)
 
     def parse(self, soup: BeautifulSoup) -> list:
@@ -212,7 +196,7 @@ class LinkedinScraper:
 
     def scrape(self):
         self.logger.info("Starting Linkedin scraping.")
-        soup = self.find_profile_and_retrieve_first_html()
+        soup = self.retrieve_offers()
         jobs = self.parse(soup)
         self.logger.info("Finished Linkedin scraping.")
         return jobs
