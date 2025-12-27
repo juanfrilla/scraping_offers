@@ -9,4 +9,4 @@ migrate to Rust
 # Farmeando cookies cuando te da bien, funciona linkedin pero quizas esas cookies seran invalidas cuando te banee.
 
 
-# hacer esta busqueda y si no tiene las palabras clave, la descarto scraping, crawling, acquisition, extraction, consuming
+# hacer esta busqueda y si no tiene las palabras clave en la descripcion, la descarto scraping, crawling, acquisition, extraction, consuming

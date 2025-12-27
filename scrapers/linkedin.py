@@ -1,8 +1,5 @@
-import html
-import json
 import random
 import time
-import urllib.parse
 
 import curl_cffi as requests
 from bs4 import BeautifulSoup
@@ -10,6 +7,7 @@ from bs4 import BeautifulSoup
 from logger import get_logger
 from utils import (
     determine_modality,
+    get_json_from_html,
     keyword_counter,
     load_html,
     normalize_string,
@@ -62,12 +60,14 @@ class LinkedinScraper:
             "tor145",
         ]
 
-    def retrieve_offers(self) -> BeautifulSoup:
+    def retrieve_offers(self) -> list:
         impersonate = self.get_impersonator()
         self.logger.info(f"using {impersonate}")
         self.impersonate = impersonate
         response = self.linkedin_jobsearch_request()
-        return BeautifulSoup(response.text, "html.parser")
+        soup = BeautifulSoup(response.text, "html.parser")
+        job_list = soup.select("li")
+        return [job.select_one("a")["href"].strip() for job in job_list]
 
     def get_impersonator(self):
         impersonate = random.choice(self.IMPERSONATE_LIST)
@@ -115,36 +115,23 @@ class LinkedinScraper:
         self.logger.error(f"Failed to fetch {url} after {max_retries} retries.")
         return None
 
-    def build_query(self, terms):
-        encoded = [f"%22{urllib.parse.quote(term)}%22" for term in terms]
-        return "%20OR%20".join(encoded)
-
-    def random_query(self):
-        keywords = ["scraping", "crawling", "data extraction", "data acquisition"]
-        shuffled = keywords[:]
-        random.shuffle(shuffled)
-        return self.build_query(shuffled)
-
     def linkedin_jobsearch_request(self):
-        query_part = self.random_query()
-        url = f"https://www.linkedin.com/jobs/search/?currentJobId=4333406365&distance=25.0&geoId=105646813&keywords={query_part}&origin=JOB_SEARCH_PAGE_JOB_FILTER&sortBy=DD"
+        url = "https://www.linkedin.com/jobs-guest/jobs/api/seeMoreJobPostings/search?keywords=%22scraping%22&location=Espa%C3%B1a&geoId=105646813&start=0"
+
+        self.logger.info(f"Scraping {url}")
         return self.make_request(url)
 
-    def parse(self, soup: BeautifulSoup) -> list:
-        job_list = soup.select("ul.jobs-search__results-list > li")
-        self.logger.info(f"Found {len(job_list)} job postings on the page.")
+    def parse(self, urls: list) -> list:
+        self.logger.info(f"Found {len(urls)} job postings on the page.")
 
         records = []
 
-        for job_id, job in enumerate(job_list):
-            url = job.select_one("a")["href"].strip()
-            self.logger.info(f"Parsing job posting {job_id + 1}/{len(job_list)}")
+        for job_id, url in enumerate(list(urls)):
+            self.logger.info(f"Parsing job posting {job_id + 1}/{len(urls)}")
             offer_response = self.make_request(url)
             offer_soup = BeautifulSoup(offer_response.text, "html.parser")
-            script_tag = offer_soup.find("script", type="application/ld+json")
-            if script_tag:
-                raw_json_content = script_tag.string
-                json_content = self.json_from_ld(raw_json_content)
+            json_content = get_json_from_html(offer_soup)
+            if json_content:
                 title = json_content.get("title", "N/A")
                 company = json_content.get("hiringOrganization", {}).get("name", "N/A")
                 location = (
@@ -201,15 +188,10 @@ class LinkedinScraper:
         normalized = normalize_string(location_lower)
         return locations.get(normalized, normalized)
 
-    def json_from_ld(self, raw: str) -> dict:
-        clean = raw.strip()
-        clean = html.unescape(clean)
-        return json.loads(clean)
-
     def scrape(self):
         self.logger.info("Starting Linkedin scraping.")
-        soup = self.retrieve_offers()
-        jobs = self.parse(soup)
+        urls = self.retrieve_offers()
+        jobs = self.parse(urls)
         self.logger.info("Finished Linkedin scraping.")
         return jobs
 

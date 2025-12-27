@@ -1,10 +1,11 @@
+import html
 import json
 import os
 import re
 from collections import Counter
-from datetime import date
+from datetime import date, datetime, timezone
 
-from dateutil.parser import isoparse
+from bs4 import BeautifulSoup
 
 from constants import LAST_SCRAPED_FILE
 
@@ -59,6 +60,7 @@ def update_last_scraped() -> None:
 def normalize_string(s: str) -> str:
     return s.title().strip()
 
+
 def determine_modality(title: str, description: str) -> str:
     title_lower = title.lower()
     description_lower = description.lower()
@@ -95,3 +97,25 @@ def keyword_counter(text, min_length=5):
     counts = Counter(filtered)
     sorted_keywords = sorted(counts.items(), key=lambda x: x[1], reverse=True)
     return [keyword for keyword, _ in sorted_keywords[:4]]
+
+
+def json_from_ld(raw: str) -> dict:
+    clean = raw.strip()
+    clean = html.unescape(clean)
+    return json.loads(clean)
+
+
+def get_json_from_html(soup: BeautifulSoup) -> dict:
+    types = ["application/json", "application/ld+json"]
+    for type in types:
+        script_tag = soup.find("script", type=type)
+        if script_tag:
+            raw_json_content = script_tag.string
+            return json_from_ld(raw_json_content)
+    return {}
+
+
+def from_timestamp_to_isoformat(ts_ms: int):
+    dt = datetime.fromtimestamp(ts_ms / 1000, tz=timezone.utc)
+
+    return dt.isoformat()
