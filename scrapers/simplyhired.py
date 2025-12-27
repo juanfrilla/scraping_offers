@@ -61,10 +61,15 @@ class SimplyHiredScraper:
         burp0_url = "https://www.simplyhired.es:443/search?q=%22crawler%22+or+%22scraping%22&l=espa%25c3%25b1a"
 
         response = self.session.get(burp0_url, impersonate="chrome131")
-
-        burp0_url = "https://www.simplyhired.es:443/_next/data/W7sBJq-l9Iu7Aaqtnhkkx/es-ES/search.json?q=%22crawler%22+or+%22scraping%22&l=espa%25c3%25b1a"
+        html_json = get_json_from_html(BeautifulSoup(response.text))
+        build_id = html_json.get("buildId")
+        burp0_url = f"https://www.simplyhired.es:443/_next/data/{build_id}/es-ES/search.json?q=%22crawler%22+or+%22scraping%22&l=espa%25c3%25b1a"
         response = self.session.get(burp0_url, impersonate="chrome131")
-        return response.json()
+
+        try:
+            return response.json()
+        except Exception:
+            self.logger.info(f"response.text -> {response.text}")
 
     def job_info_request(self, bot_url: str):
         burp0_url = f"https://www.simplyhired.es{bot_url}"
