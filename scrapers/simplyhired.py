@@ -13,7 +13,7 @@ from utils import (
 
 class SimplyHiredScraper:
     def __init__(self):
-        self.logger = get_logger("linkedin_scraper")
+        self.logger = get_logger("simplyhired_scraper")
         self.session = requests.Session()
 
         self.IMPERSONATE_LIST = [
