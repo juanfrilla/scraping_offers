@@ -70,6 +70,7 @@ class SimplyHiredScraper:
             return response.json()
         except Exception:
             self.logger.info(f"response.text -> {response.text}")
+            return {}
 
     def job_info_request(self, bot_url: str):
         burp0_url = f"https://www.simplyhired.es{bot_url}"
