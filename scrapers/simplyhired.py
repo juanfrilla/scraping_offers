@@ -15,6 +15,7 @@ from utils import (
 
 
 class SimplyHiredScraper:
+    # Hacen falta residential proxies
     def __init__(self):
         self.logger = get_logger("simplyhired_scraper")
         self.session = requests.Session()
