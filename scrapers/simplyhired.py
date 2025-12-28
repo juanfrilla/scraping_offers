@@ -52,6 +52,10 @@ class SimplyHiredScraper:
         ]
 
     def get_jobs_request(self):
+        response = self.session.get(
+            "https://www.simplyhired.es/", impersonate="chrome131"
+        )
+        self.logger.info(response.text)
         burp0_url = "https://www.simplyhired.es/search?q=%22crawler%22+or+%22scraping%22&l=espa%25c3%25b1a"
         for impersonate in self.IMPERSONATE_LIST:
             self.impersonate = impersonate
