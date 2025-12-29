@@ -1,6 +1,3 @@
-import random
-import time
-
 import curl_cffi as requests
 from bs4 import BeautifulSoup
 
@@ -52,23 +49,42 @@ class SimplyHiredScraper:
         ]
 
     def get_jobs_request(self):
-        burp0_url = "https://www.simplyhired.es/search?q=%22crawler%22+or+%22scraping%22&l=espa%25c3%25b1a"
-        for impersonate in self.IMPERSONATE_LIST:
-            response = self.session.get(
-                "https://www.simplyhired.es/", impersonate="chrome131"
-            )
-            self.logger.info(response.text)
-            self.impersonate = impersonate
-            self.logger.info(f"Using {impersonate}")
-            response = self.session.get(burp0_url, impersonate=impersonate)
-            html_json = get_json_from_html(BeautifulSoup(response.text))
-            if html_json != {}:
-                self.logger.info("Retrieved data!")
-                return html_json
-            wait = random.randint(1, 5)
-            self.logger.info(f"Empty data, continuing and waiting {wait} seconds ....")
-            time.sleep(wait)
-        return {}
+        params = {
+            "q": "scraping",
+            "l": "España",
+            "from": "searchOnHP",
+        }
+
+        response = self.session.get(
+            "https://es.indeed.com/jobs",
+            params=params,
+            impersonate="chrome131",
+        )
+        self.logger.info(f"Response text INDEED: {response.text}")
+
+        response = self.session.get(
+            "https://www.glassdoor.es/Empleo/espa%C3%B1a-scraping-empleos-SRCH_IL.0,6_IN219_KO7,15.htm",
+            params=params,
+            impersonate="chrome131",
+        )
+        self.logger.info(f"Response text GLASSDOOR: {response.text}")
+        # burp0_url = "https://www.simplyhired.es/search?q=%22crawler%22+or+%22scraping%22&l=espa%25c3%25b1a"
+        # for impersonate in self.IMPERSONATE_LIST:
+        #     response = self.session.get(
+        #         "https://www.simplyhired.es/", impersonate="chrome131"
+        #     )
+        #     self.logger.info(response.text)
+        #     self.impersonate = impersonate
+        #     self.logger.info(f"Using {impersonate}")
+        #     response = self.session.get(burp0_url, impersonate=impersonate)
+        #     html_json = get_json_from_html(BeautifulSoup(response.text))
+        #     if html_json != {}:
+        #         self.logger.info("Retrieved data!")
+        #         return html_json
+        #     wait = random.randint(1, 5)
+        #     self.logger.info(f"Empty data, continuing and waiting {wait} seconds ....")
+        #     time.sleep(wait)
+        # return {}
 
     def job_info_request(self, bot_url: str):
         burp0_url = f"https://www.simplyhired.es{bot_url}"
