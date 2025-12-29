@@ -1,3 +1,6 @@
+import random
+import time
+
 import curl_cffi as requests
 from bs4 import BeautifulSoup
 
@@ -49,52 +52,32 @@ class SimplyHiredScraper:
         ]
 
     def get_jobs_request(self):
-        params = {
-            "q": "scraping",
-            "l": "España",
-            "from": "searchOnHP",
-        }
-
-        response = self.session.get(
-            "https://es.indeed.com/jobs",
-            params=params,
-            impersonate="chrome131",
-        )
-        self.logger.info(f"Response text INDEED: {response.text}")
-
-        response = self.session.get(
-            "https://www.glassdoor.es/Empleo/espa%C3%B1a-scraping-empleos-SRCH_IL.0,6_IN219_KO7,15.htm",
-            params=params,
-            impersonate="chrome131",
-        )
-        self.logger.info(f"Response text GLASSDOOR: {response.text}")
-        # burp0_url = "https://www.simplyhired.es/search?q=%22crawler%22+or+%22scraping%22&l=espa%25c3%25b1a"
-        # for impersonate in self.IMPERSONATE_LIST:
-        #     response = self.session.get(
-        #         "https://www.simplyhired.es/", impersonate="chrome131"
-        #     )
-        #     self.logger.info(response.text)
-        #     self.impersonate = impersonate
-        #     self.logger.info(f"Using {impersonate}")
-        #     response = self.session.get(burp0_url, impersonate=impersonate)
-        #     html_json = get_json_from_html(BeautifulSoup(response.text))
-        #     if html_json != {}:
-        #         self.logger.info("Retrieved data!")
-        #         return html_json
-        #     wait = random.randint(1, 5)
-        #     self.logger.info(f"Empty data, continuing and waiting {wait} seconds ....")
-        #     time.sleep(wait)
-        # return {}
+        burp0_url = "https://www.simplyhired.es/search?q=%22crawler%22+or+%22scraping%22&l=espa%25c3%25b1a"
+        for impersonate in self.IMPERSONATE_LIST:
+            response = self.session.get(
+                "https://www.simplyhired.es/", impersonate="chrome131"
+            )
+            self.impersonate = impersonate
+            self.logger.info(f"Using {impersonate}")
+            response = self.session.get(burp0_url, impersonate=impersonate)
+            html_json = get_json_from_html(BeautifulSoup(response.text))
+            if html_json != {}:
+                self.logger.info("Retrieved data!")
+                return html_json
+            wait = random.randint(1, 5)
+            self.logger.info(f"Empty data, continuing and waiting {wait} seconds ....")
+            time.sleep(wait)
+        return {}
 
     def job_info_request(self, bot_url: str):
-        burp0_url = f"https://www.simplyhired.es{bot_url}"
-        response = self.session.get(burp0_url, impersonate=self.impersonate)
+        url = f"https://www.simplyhired.es{bot_url}"
+        response = self.session.get(url, impersonate=self.impersonate)
         offer_soup = BeautifulSoup(response.text, "html.parser")
         return get_json_from_html(offer_soup)
 
     def parse(self, jobs_data: dict) -> list:
         records = []
-        jobs = jobs_data = jobs_data.get("pageProps", {}).get("jobs", {})
+        jobs = jobs_data.get("props", {}).get("pageProps", {}).get("jobs", [])
         self.logger.info(f"Found {len(jobs)} job postings on the page.")
 
         for job_id, job in enumerate(jobs):
@@ -117,7 +100,7 @@ class SimplyHiredScraper:
                     "title": title,
                     "company": normalize_string(company),
                     "location": location,
-                    "url": bot_url,
+                    "url": f"https://www.simplyhired.es{bot_url}",
                     "date_posted": from_timestamp_to_isoformat(date_posted_timestamp),
                     "modality": modality,
                     "platform": "SIMPLYHIRED",

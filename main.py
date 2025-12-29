@@ -4,6 +4,7 @@ from datetime import date, datetime, timezone
 
 import streamlit as st
 from dateutil.parser import isoparse
+from dotenv import load_dotenv
 
 from constants import DATA_FILE, LOG_DIR
 from logger import get_logger
@@ -18,9 +19,20 @@ from utils import (
     update_last_scraped,
 )
 
+load_dotenv()
+
 
 def scrape_everything():
-    scrapers = [LinkedinScraper, InfoJobsScraper, EmpleateScraper]  # SimplyHiredScraper
+    in_server = os.getenv("ENV", "server") == "True"
+    if in_server:
+        scrapers = [LinkedinScraper, InfoJobsScraper, EmpleateScraper]
+    else:
+        scrapers = [
+            SimplyHiredScraper,
+            LinkedinScraper,
+            InfoJobsScraper,
+            EmpleateScraper,
+        ]
     job_posts = []
     for ScraperClass in scrapers:
         scraper = ScraperClass()
