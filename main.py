@@ -23,7 +23,8 @@ load_dotenv()
 
 
 def scrape_everything():
-    in_server = os.getenv("ENV", "server") == "True"
+    ENV = os.getenv("ENV", "server")
+    in_server = ENV == "server"
     if in_server:
         scrapers = [LinkedinScraper, InfoJobsScraper, EmpleateScraper]
     else:
