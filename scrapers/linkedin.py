@@ -61,13 +61,18 @@ class LinkedinScraper:
         ]
 
     def retrieve_offers(self) -> list:
+        jobs = []
         impersonate = self.get_impersonator()
         self.logger.info(f"using {impersonate}")
         self.impersonate = impersonate
-        response = self.linkedin_jobsearch_request()
-        soup = BeautifulSoup(response.text, "html.parser")
-        job_list = soup.select("li")
-        return [job.select_one("a")["href"].strip() for job in job_list]
+        keywords = ["scraping", "crawling", "data%20aquisition"]
+        for keyword in keywords:
+            self.logger.info(f"Searching word {keyword}")
+            response = self.linkedin_jobsearch_request(keyword)
+            soup = BeautifulSoup(response.text, "html.parser")
+            job_list = soup.select("li")
+            jobs += [job.select_one("a")["href"].strip() for job in job_list]
+        return jobs
 
     def get_impersonator(self):
         impersonate = random.choice(self.IMPERSONATE_LIST)
@@ -115,8 +120,8 @@ class LinkedinScraper:
         self.logger.error(f"Failed to fetch {url} after {max_retries} retries.")
         return None
 
-    def linkedin_jobsearch_request(self):
-        url = "https://www.linkedin.com/jobs-guest/jobs/api/seeMoreJobPostings/search?keywords=%22scraping%22&location=Espa%C3%B1a&geoId=105646813&start=0"
+    def linkedin_jobsearch_request(self, keyword="scraping"):
+        url = f"https://www.linkedin.com/jobs-guest/jobs/api/seeMoreJobPostings/search?keywords=%22{keyword}%22&location=Espa%C3%B1a&geoId=105646813&start=0"
 
         self.logger.info(f"Scraping {url}")
         return self.make_request(url)
