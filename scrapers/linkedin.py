@@ -130,6 +130,7 @@ class LinkedinScraper:
         self.logger.info(f"Found {len(urls)} job postings on the page.")
 
         records = []
+        external_ids = set()
 
         for job_id, url in enumerate(list(urls)):
             self.logger.info(f"Parsing job posting {job_id + 1}/{len(urls)}")
@@ -160,18 +161,22 @@ class LinkedinScraper:
                 description = self.get_text(raw_description)
 
                 modality = determine_modality(title, description)
-            records.append(
-                {
-                    "title": title,
-                    "company": normalize_string(company),
-                    "location": self.determine_location(location),
-                    "url": url,
-                    "date_posted": date_posted_str,
-                    "modality": modality,
-                    "platform": "LINKEDIN",
-                    "keywords": keyword_counter(description),
-                }
-            )
+            determined_location = self.determine_location(location)
+            external_id = f"{title}_{company}_{determined_location}"
+            if external_id not in external_ids:
+                external_ids.add(external_id)
+                records.append(
+                    {
+                        "title": title,
+                        "company": normalize_string(company),
+                        "location": determined_location,
+                        "url": url,
+                        "date_posted": date_posted_str,
+                        "modality": modality,
+                        "platform": "LINKEDIN",
+                        "keywords": keyword_counter(description),
+                    }
+                )
 
         return records
 
