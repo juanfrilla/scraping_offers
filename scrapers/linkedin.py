@@ -65,7 +65,14 @@ class LinkedinScraper:
         impersonate = self.get_impersonator()
         self.logger.info(f"using {impersonate}")
         self.impersonate = impersonate
-        keywords = ["scraping", "crawling", "data%20aquisition"]
+        keywords = [
+            "scraping",
+            "crawling",
+            "data%20aquisition",
+            "data%20extraction",
+            "scraper",
+            "crawler",
+        ]
         for keyword in keywords:
             self.logger.info(f"Searching word {keyword}")
             response = self.linkedin_jobsearch_request(keyword)
