@@ -11,6 +11,7 @@ from logger import get_logger
 from scrapers.empleate import EmpleateScraper
 from scrapers.infojobs import InfoJobsScraper
 from scrapers.linkedin import LinkedinScraper
+from scrapers.simplyhired import SimplyHiredScraper
 from utils import (
     last_scraped_today,
     read_json,
@@ -28,10 +29,10 @@ def scrape_everything():
         scrapers = [LinkedinScraper, InfoJobsScraper, EmpleateScraper]
     else:
         scrapers = [
-            # SimplyHiredScraper,
-            # LinkedinScraper,
+            SimplyHiredScraper,
+            LinkedinScraper,
             InfoJobsScraper,
-            # EmpleateScraper,
+            EmpleateScraper,
         ]
     job_posts = []
     for ScraperClass in scrapers:
