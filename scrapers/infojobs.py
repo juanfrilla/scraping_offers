@@ -5,14 +5,15 @@ from bs4 import BeautifulSoup
 from curl_cffi import requests
 
 from logger import get_logger
-from utils import determine_modality, keyword_counter, normalize_string, read_json
+from utils import determine_modality, find_keyword, normalize_string, read_json
 
 
 class InfoJobsScraper:
     def __init__(self):
         self.logger = get_logger("infojobs_scraper")
+        self.session = requests.Session()
 
-    def infojobs_jobsearch_request(self):
+    def infojobs_jobsearch_request(self, keyword: str):
         url = "https://www.infojobs.net/jobsearch/search-results/list.xhtml"
         headers = {
             "Cache-Control": "max-age=0",
@@ -34,7 +35,7 @@ class InfoJobsScraper:
             "Priority": "u=0, i",
         }
         data = {
-            "palabra": "scraping",
+            "palabra": keyword,
             "normalizedJobTitleId": "",
             "of_provincia": "0",
             "canal": "0",
@@ -42,7 +43,7 @@ class InfoJobsScraper:
             "origen_accion": "0",
             "vieneUrlExecutive": "false",
         }
-        return requests.post(url, headers=headers, data=data, impersonate="chrome131")
+        return self.session.post(url, data=data, impersonate="chrome136")
 
     def convert_soup_to_json(self, soup: BeautifulSoup):
         target_script = None
@@ -79,19 +80,20 @@ class InfoJobsScraper:
             modality = offer.get("teleworking") or determine_modality(
                 title, description
             )
-            keywords = keyword_counter(description)
-            records.append(
-                {
-                    "title": title,
-                    "company": normalize_string(company),
-                    "location": self.determine_location(location),
-                    "url": url,
-                    "date_posted": date_posted_str,
-                    "modality": self.determine_modality(modality),
-                    "platform": "INFOJOBS",
-                    "keywords": keywords,
-                }
-            )
+            keyword_appeared = find_keyword(description)
+            if keyword_appeared:
+                records.append(
+                    {
+                        "title": title,
+                        "company": normalize_string(company),
+                        "location": self.determine_location(location),
+                        "url": url,
+                        "date_posted": date_posted_str,
+                        "modality": self.determine_modality(modality),
+                        "platform": "INFOJOBS",
+                        "keyword_appeared": keyword_appeared,
+                    }
+                )
         return records
 
     def determine_modality(self, modality: str) -> str:
@@ -111,13 +113,25 @@ class InfoJobsScraper:
 
     def scrape(self):
         self.logger.info("Starting Infojobs scraping.")
-        response = self.infojobs_jobsearch_request()
-        html = response.text
-        soup = BeautifulSoup(html, "html.parser")
-        json_data = self.convert_soup_to_json(soup)
-        jobs = self.parse(json_data)
-        self.logger.info("Finished Infojobs scraping.")
-        return jobs
+        keywords = [
+            "scraping",
+            "crawling",
+            "data%20aquisition",
+            "data%20extraction",
+            "scraper",
+            "crawler",
+        ]
+        all_jobs = []
+        for keyword in keywords:
+            response = self.infojobs_jobsearch_request(keyword)
+            html = response.text
+            soup = BeautifulSoup(html, "html.parser")
+            json_data = self.convert_soup_to_json(soup)
+            jobs = self.parse(json_data)
+            self.logger.info(f"Retrieved {len(jobs)} for {keyword}")
+            all_jobs += jobs
+            self.logger.info("Finished Infojobs scraping.")
+        return all_jobs
 
     def scrape_test(self):
         json_data = read_json("./seed/infojobs_jobsearch.json")

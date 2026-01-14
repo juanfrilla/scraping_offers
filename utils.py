@@ -2,7 +2,6 @@ import html
 import json
 import os
 import re
-from collections import Counter
 from datetime import date, datetime, timezone
 
 from bs4 import BeautifulSoup
@@ -90,13 +89,11 @@ def determine_modality(title: str, description: str) -> str:
         return "N/A"
 
 
-def keyword_counter(text, min_length=5):
-    text = text.lower()
-    words = re.findall(r"[a-zA-Z]+", text)
-    filtered = [w for w in words if len(w) >= min_length]
-    counts = Counter(filtered)
-    sorted_keywords = sorted(counts.items(), key=lambda x: x[1], reverse=True)
-    return [keyword for keyword, _ in sorted_keywords[:4]]
+def find_keyword(text: str) -> str:
+    _PATTERN = re.compile(r"\b(crawl|scrap|acqui|extract)\w*", re.IGNORECASE)
+
+    match = _PATTERN.search(text)
+    return match.group(0) if match else None
 
 
 def json_from_ld(raw: str) -> dict:

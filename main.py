@@ -11,7 +11,6 @@ from logger import get_logger
 from scrapers.empleate import EmpleateScraper
 from scrapers.infojobs import InfoJobsScraper
 from scrapers.linkedin import LinkedinScraper
-from scrapers.simplyhired import SimplyHiredScraper
 from utils import (
     last_scraped_today,
     read_json,
@@ -29,10 +28,10 @@ def scrape_everything():
         scrapers = [LinkedinScraper, InfoJobsScraper, EmpleateScraper]
     else:
         scrapers = [
-            SimplyHiredScraper,
-            LinkedinScraper,
+            # SimplyHiredScraper,
+            # LinkedinScraper,
             InfoJobsScraper,
-            EmpleateScraper,
+            # EmpleateScraper,
         ]
     job_posts = []
     for ScraperClass in scrapers:
@@ -139,7 +138,7 @@ with st.spinner("Scraping jobs..."):
                 st.write(f"💼**Modality:** {job.get('modality', 'N/A')}")
                 st.write(f"📅**Posted:** {date_posted}")
                 st.write(f"🌐**Platform:** {job.get('platform', 'N/A')}")
-                st.write("**Top Keywords:** " + ", ".join(job.get("keywords", [])))
+                st.write("**Keyword appeared:** " + job.get("keyword_appeared", []))
 
             with col2:
                 st.markdown(

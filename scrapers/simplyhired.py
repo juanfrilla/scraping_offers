@@ -7,9 +7,9 @@ from bs4 import BeautifulSoup
 from logger import get_logger
 from utils import (
     determine_modality,
+    find_keyword,
     from_timestamp_to_isoformat,
     get_json_from_html,
-    keyword_counter,
     normalize_string,
 )
 
@@ -51,8 +51,8 @@ class SimplyHiredScraper:
             "tor145",
         ]
 
-    def get_jobs_request(self):
-        burp0_url = "https://www.simplyhired.es/search?q=%22crawler%22+or+%22scraping%22&l=espa%25c3%25b1a"
+    def get_jobs_request(self, keyword: str):
+        burp0_url = f"https://www.simplyhired.es/search?q={keyword}&l=espa%25c3%25b1a"
         for impersonate in self.IMPERSONATE_LIST:
             response = self.session.get(
                 "https://www.simplyhired.es/", impersonate="chrome131"
@@ -95,24 +95,41 @@ class SimplyHiredScraper:
             location = job.get("location")
             date_posted_timestamp = job.get("datePublished") or job.get("dateOnIndeed")
             modality = determine_modality(title, description)
-            records.append(
-                {
-                    "title": title,
-                    "company": normalize_string(company),
-                    "location": location,
-                    "url": f"https://www.simplyhired.es{bot_url}",
-                    "date_posted": from_timestamp_to_isoformat(date_posted_timestamp),
-                    "modality": modality,
-                    "platform": "SIMPLYHIRED",
-                    "keywords": keyword_counter(description),
-                }
-            )
+            keyword_appeared = find_keyword(description)
+            if keyword_appeared:
+                records.append(
+                    {
+                        "title": title,
+                        "company": normalize_string(company),
+                        "location": location,
+                        "url": f"https://www.simplyhired.es{bot_url}",
+                        "date_posted": from_timestamp_to_isoformat(
+                            date_posted_timestamp
+                        ),
+                        "modality": modality,
+                        "platform": "SIMPLYHIRED",
+                        "keyword_appeared": keyword_appeared,
+                    }
+                )
 
         return records
 
     def scrape(self):
         self.logger.info("Finished SimplyHired scraping.")
-        jobs_data = self.get_jobs_request()
-        jobs = self.parse(jobs_data)
+        keywords = [
+            "scraping",
+            "crawling",
+            "data%20aquisition",
+            "data%20extraction",
+            "scraper",
+            "crawler",
+        ]
+        all_jobs = []
+        for keyword in keywords:
+            self.logger.info(f"Scraping word {keyword}")
+            jobs_data = self.get_jobs_request(keyword)
+            jobs = self.parse(jobs_data)
+            self.logger.info(f"Retrieved {len(jobs)} for {keyword}")
+            all_jobs += jobs
         self.logger.info("Finished SimplyHired scraping.")
-        return jobs
+        return all_jobs

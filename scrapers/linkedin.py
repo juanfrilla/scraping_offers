@@ -7,8 +7,8 @@ from bs4 import BeautifulSoup
 from logger import get_logger
 from utils import (
     determine_modality,
+    find_keyword,
     get_json_from_html,
-    keyword_counter,
     load_html,
     normalize_string,
 )
@@ -61,7 +61,7 @@ class LinkedinScraper:
         ]
 
     def retrieve_offers(self) -> list:
-        jobs = []
+        all_jobs = []
         impersonate = self.get_impersonator()
         self.logger.info(f"using {impersonate}")
         self.impersonate = impersonate
@@ -78,8 +78,10 @@ class LinkedinScraper:
             response = self.linkedin_jobsearch_request(keyword)
             soup = BeautifulSoup(response.text, "html.parser")
             job_list = soup.select("li")
-            jobs += [job.select_one("a")["href"].strip() for job in job_list]
-        return jobs
+            jobs = [job.select_one("a")["href"].strip() for job in job_list]
+            self.logger.info(f"Retrieved {len(jobs)} for {keyword}")
+            all_jobs += jobs
+        return all_jobs
 
     def get_impersonator(self):
         impersonate = random.choice(self.IMPERSONATE_LIST)
@@ -170,7 +172,8 @@ class LinkedinScraper:
                 modality = determine_modality(title, description)
             determined_location = self.determine_location(location)
             external_id = f"{title}_{company}_{determined_location}"
-            if external_id not in external_ids:
+            keyword_appeared = find_keyword(description)
+            if keyword_appeared and external_id not in external_ids:
                 external_ids.add(external_id)
                 records.append(
                     {
@@ -181,7 +184,7 @@ class LinkedinScraper:
                         "date_posted": date_posted_str,
                         "modality": modality,
                         "platform": "LINKEDIN",
-                        "keywords": keyword_counter(description),
+                        "keyword_appeared": keyword_appeared,
                     }
                 )
 

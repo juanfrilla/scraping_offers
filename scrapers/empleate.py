@@ -4,15 +4,15 @@ import re
 import curl_cffi as requests
 
 from logger import get_logger
-from utils import determine_modality, keyword_counter, normalize_string, read_json
+from utils import determine_modality, find_keyword, normalize_string, read_json
 
 
 class EmpleateScraper:
     def __init__(self):
         self.logger = get_logger("empleate_scraper")
 
-    def empleate_jobsearch_request(self):
-        url = "https://www.empleate.gob.es/empleate/open/offersearch/selectBuscador?q.op=AND&rows=10&sort=score%20desc&defType=edismax&df=titulo&facet=true&facet.field=paisF&facet.field=provinciaF&facet.field=provincia&facet.field=categoria&facet.field=categoriaF&facet.field=subcategoriaF&facet.field=subcategoria&facet.field=origen&facet.field=tipoContrato&facet.field=tipoContratoN&facet.field=noMeInteresa&facet.field=educacionF&facet.field=fechaCreacionPortal&facet.field=jornadaF&facet.field=experienciaF&facet.field=educacion&facet.field=minExperiencia&facet.field=jornada&facet.field=pais&facet.field=discapacidad&facet.field=cno&facet.field=portales&facet.field=showPortalPu&facet.field=showPortalPr&facet.mincount=1&f.topics.facet.limit=50&json.nl=map&fq=(speStateId%3A1%20OR%20speStateId%3A4)%20AND%20checkVisible%3A1&fl=*%2C%20score&q=%22scraping%22%20OR%20%22crawling%22%20OR%20%22data%20extraction%22%20OR%20%22data%20acquisition%22&wt=json&json.wrf=jQuery110200911569443944088_1766487062418&_=1766487062428"
+    def empleate_jobsearch_request(self, keyword: str):
+        url = f"https://www.empleate.gob.es/empleate/open/offersearch/selectBuscador?q.op=AND&rows=10&sort=score%20desc&defType=edismax&df=titulo&facet=true&facet.field=paisF&facet.field=provinciaF&facet.field=provincia&facet.field=categoria&facet.field=categoriaF&facet.field=subcategoriaF&facet.field=subcategoria&facet.field=origen&facet.field=tipoContrato&facet.field=tipoContratoN&facet.field=noMeInteresa&facet.field=educacionF&facet.field=fechaCreacionPortal&facet.field=jornadaF&facet.field=experienciaF&facet.field=educacion&facet.field=minExperiencia&facet.field=jornada&facet.field=pais&facet.field=discapacidad&facet.field=cno&facet.field=portales&facet.field=showPortalPu&facet.field=showPortalPr&facet.mincount=1&f.topics.facet.limit=50&json.nl=map&fq=(speStateId%3A1%20OR%20speStateId%3A4)%20AND%20checkVisible%3A1&fl=*%2C%20score&q={keyword}&wt=json&json.wrf=jQuery110200911569443944088_1766487062418&_=1766487062428"
         headers = {
             "Sec-Ch-Ua-Platform": '"Windows"',
             "X-Requested-With": "XMLHttpRequest",
@@ -53,28 +53,42 @@ class EmpleateScraper:
             date_posted_str = doc.get("fechaCreacionPortal", "")
             platform = doc.get("entitytype")
             description = doc.get("contenido", "")
-            records.append(
-                {
-                    "title": title,
-                    "company": normalize_string(company),
-                    "location": normalize_string(location),
-                    "url": url,
-                    "date_posted": date_posted_str,
-                    "platform": platform,
-                    "modality": determine_modality(title, doc.get("contenido", "")),
-                    "keywords": keyword_counter(description),
-                }
-            )
+            keyword_appeared = find_keyword(description)
+            if keyword_appeared:
+                records.append(
+                    {
+                        "title": title,
+                        "company": normalize_string(company),
+                        "location": normalize_string(location),
+                        "url": url,
+                        "date_posted": date_posted_str,
+                        "platform": platform,
+                        "modality": determine_modality(title, doc.get("contenido", "")),
+                        "keyword_appeared": keyword_appeared,
+                    }
+                )
         return records
 
     def scrape(self):
         self.logger.info("Starting Empleate scraping.")
-        response = self.empleate_jobsearch_request()
-        content = response.content
-        json_data = self.convert_content_to_json(content)
-        jobs = self.parse(json_data)
-        self.logger.info("Finished Empleate scraping.")
-        return jobs
+        keywords = [
+            "scraping",
+            "crawling",
+            "data%20aquisition",
+            "data%20extraction",
+            "scraper",
+            "crawler",
+        ]
+        all_jobs = []
+        for keyword in keywords:
+            response = self.empleate_jobsearch_request(keyword)
+            content = response.content
+            json_data = self.convert_content_to_json(content)
+            jobs = self.parse(json_data)
+            self.logger.info(f"Retrieved {len(jobs)} for {keyword}")
+            all_jobs += jobs
+            self.logger.info("Finished Empleate scraping.")
+        return all_jobs
 
     def scrape_test(self):
         json_data = read_json("./seed/empleate_jobsearch.json")
