@@ -6,10 +6,10 @@ A specialized web scraping tool designed to aggregate job postings from **Linked
 
 ---
 
-## ⚠️ Important Note on SimplyHired and RemoteRocketShip
+## ⚠️ Residential Proxy Requirements on SimplyHired and RemoteRocketShip
 
-Please note that the **SimplyHired** scraper is configured to work primarily in **local environments**. Due to strict anti-bot measures, it requires **residential proxies** to function correctly, which are not currently active in the live cloud demo.
-It happens almost the same on RemoteRocketShip, when accessing the job offer url, you need **residential proxies** as well.
+**SimplyHired**: Currently limited in the cloud demo. Due to strict security measures, it functions best in local environments or in production with residential proxies.
+**RemoteRocketShip**: The scraper has been specifically adapted to extract and display key job data directly within this app in production, reducing the need for residential proxies, but I can't access some information without residential proxies, specifically the job offer url.
 
 ## ✨ Features
 
