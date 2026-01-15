@@ -66,7 +66,7 @@ class RemoteRocketshipScraper:
             job_info = {}
             job_info_props = job_info.get("props", {}).get("pageProps", {}) or {}
             title = job.get("roleTitle")
-            job_oppening = job_info_props.get("jobOpening")
+            job_oppening = job_info_props.get("jobOpening", {})
             description = "\n".join(
                 [
                     job_oppening.get("roleDescription", ""),
@@ -99,9 +99,3 @@ class RemoteRocketshipScraper:
     def scrape(self):
         response_json = self.get_jobs_request()
         return self.parse(response_json)
-
-        # pepe = self.job_information_request()
-
-        # soup = BeautifulSoup(pepe.text, "html.parser")
-        # json = get_json_from_html(soup)
-        # print()
