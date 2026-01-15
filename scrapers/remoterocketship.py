@@ -77,7 +77,7 @@ class RemoteRocketshipScraper:
 
             location = job.get("location")
             date_posted_str = job.get("created_at")
-            modality = "REMOTE"
+            modality = "Remote"
             keyword_appeared = find_keyword(description) or ""
             # if keyword_appeared:
             records.append(
