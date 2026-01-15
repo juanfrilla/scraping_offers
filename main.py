@@ -26,7 +26,12 @@ def scrape_everything():
     ENV = os.getenv("ENV", "server")
     in_server = ENV == "server"
     if in_server:
-        scrapers = [LinkedinScraper, InfoJobsScraper, EmpleateScraper]
+        scrapers = [
+            SimplyHiredScraper,
+            LinkedinScraper,
+            InfoJobsScraper,
+            EmpleateScraper,
+        ]
     else:
         scrapers = [
             SimplyHiredScraper,
