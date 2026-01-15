@@ -96,7 +96,7 @@ def find_keyword(text: str) -> str:
     return match.group(0) if match else None
 
 
-def json_from_ld(raw: str) -> dict:
+def _json_from_ld(raw: str) -> dict:
     clean = raw.strip()
     clean = html.unescape(clean)
     return json.loads(clean)
@@ -108,7 +108,7 @@ def get_json_from_html(soup: BeautifulSoup) -> dict:
         script_tag = soup.find("script", type=type)
         if script_tag:
             raw_json_content = script_tag.string
-            return json_from_ld(raw_json_content)
+            return _json_from_ld(raw_json_content)
     return {}
 
 
@@ -116,6 +116,7 @@ def from_timestamp_to_isoformat(ts_ms: int):
     dt = datetime.fromtimestamp(ts_ms / 1000, tz=timezone.utc)
 
     return dt.isoformat()
+
 
 def filter_jobs(jobs: list) -> list:
     urls = set()

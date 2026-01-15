@@ -55,6 +55,7 @@ class EmpleateScraper:
                         "platform": platform,
                         "modality": determine_modality(title, doc.get("contenido", "")),
                         "keyword_appeared": keyword_appeared,
+                        "logo_url": "",
                     }
                 )
         return records

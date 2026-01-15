@@ -122,6 +122,7 @@ class InfoJobsScraper:
                         "modality": self.determine_modality(modality),
                         "platform": "INFOJOBS",
                         "keyword_appeared": keyword_appeared,
+                        "logo_url": offer.get("companyLogo", ""),
                     }
                 )
         return records

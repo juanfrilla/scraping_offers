@@ -18,7 +18,6 @@ from utils import (
 class SimplyHiredScraper:
     # Hacen falta residential proxies
     def __init__(self):
-        self.logger = get_logger("simplyhired_scraper")
         self.session = requests.Session()
         self.impersonate = None
 
@@ -63,7 +62,7 @@ class SimplyHiredScraper:
             self.impersonate = impersonate
             self.logger.info(f"Using {impersonate}")
             response = self.session.get(burp0_url, impersonate=impersonate)
-            html_json = get_json_from_html(BeautifulSoup(response.text))
+            html_json = get_json_from_html(BeautifulSoup(response.text, "html.parser"))
             if html_json != {}:
                 self.logger.info("Retrieved data!")
                 return html_json
@@ -111,6 +110,7 @@ class SimplyHiredScraper:
                         "modality": modality,
                         "platform": "SIMPLYHIRED",
                         "keyword_appeared": keyword_appeared,
+                        "logo_url": job_info_props.get("employerSquareLogoUrl", ""),
                     }
                 )
 

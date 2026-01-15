@@ -144,9 +144,11 @@ class LinkedinScraper:
             offer_response = self.make_request(url)
             offer_soup = BeautifulSoup(offer_response.text, "html.parser")
             json_content = get_json_from_html(offer_soup)
+            logo_url = ""
             if json_content:
                 title = json_content.get("title", "N/A")
-                company = json_content.get("hiringOrganization", {}).get("name", "N/A")
+                company_data = json_content.get("hiringOrganization", {})
+                company = company_data.get("name", "N/A")
                 location = (
                     json_content.get("jobLocation", {})
                     .get("address", {})
@@ -155,6 +157,7 @@ class LinkedinScraper:
                 date_posted_str = json_content.get("datePosted", "")
                 description = json_content.get("description", "")
                 modality = determine_modality(title, description)
+                logo_url = company_data.get("logo")
             else:
                 raw_title = offer_soup.find("h1", class_="topcard__title")
                 title = self.get_text(raw_title)
@@ -166,7 +169,6 @@ class LinkedinScraper:
                 date_posted_str = f"{raw_date_posted_str}T00:00:00Z"
                 raw_description = offer_soup.find("div", class_="description__text")
                 description = self.get_text(raw_description)
-
                 modality = determine_modality(title, description)
             determined_location = self.determine_location(location)
             external_id = f"{title}_{company}_{determined_location}"
@@ -183,6 +185,7 @@ class LinkedinScraper:
                         "modality": modality,
                         "platform": "LINKEDIN",
                         "keyword_appeared": keyword_appeared,
+                        "logo_url": logo_url,
                     }
                 )
 

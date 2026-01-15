@@ -11,6 +11,7 @@ from logger import get_logger
 from scrapers.empleate import EmpleateScraper
 from scrapers.infojobs import InfoJobsScraper
 from scrapers.linkedin import LinkedinScraper
+from scrapers.remoterocketship import RemoteRocketshipScraper
 from scrapers.simplyhired import SimplyHiredScraper
 from utils import (
     last_scraped_today,
@@ -25,15 +26,14 @@ load_dotenv()
 def scrape_everything():
     ENV = os.getenv("ENV", "server")
     in_server = ENV == "server"
-    if in_server:
-        scrapers = [LinkedinScraper, InfoJobsScraper, EmpleateScraper]
-    else:
-        scrapers = [
-            SimplyHiredScraper,
-            LinkedinScraper,
-            InfoJobsScraper,
-            EmpleateScraper,
-        ]
+    scrapers = [
+        RemoteRocketshipScraper,
+        LinkedinScraper,
+        InfoJobsScraper,
+        EmpleateScraper,
+    ]
+    if not in_server:
+        scrapers += [SimplyHiredScraper]
     job_posts = []
     for ScraperClass in scrapers:
         scraper = ScraperClass()
@@ -128,26 +128,31 @@ with st.spinner("Scraping jobs..."):
         date_posted = posted_dt.strftime("%d/%m/%Y")
         with st.container():
             title = job.get("title", "No title")
-            date_posted = posted_dt.strftime("%d/%m/%Y")
+            st.subheader(f"{title} 🆕" if is_new else title)
+            col_logo, col_info, col_button = st.columns([1, 4, 1.5])
 
-            if is_new:
-                st.subheader(f"{title} 🆕")
-            else:
-                st.subheader(title)
+            with col_logo:
+                logo_url = job.get("logo_url")
+                if logo_url:
+                    st.image(logo_url, width=80)
+                else:
+                    st.write("🏢")
 
-            col1, col2 = st.columns([3, 1])
+            with col_info:
+                st.write(f"**{job.get('company', 'N/A')}**")
+                st.write(
+                    f"📍 {job.get('location', 'N/A')} | 💼 {job.get('modality', 'N/A')}"
+                )
+                st.write(f"📅 Posted: {date_posted} | 🌐 {job.get('platform', 'N/A')}")
 
-            with col1:
-                st.write(f"🏢**Company:** {job.get('company', 'N/A')}")
-                st.write(f"📍**Location:** {job.get('location', 'N/A')}")
-                st.write(f"💼**Modality:** {job.get('modality', 'N/A')}")
-                st.write(f"📅**Posted:** {date_posted}")
-                st.write(f"🌐**Platform:** {job.get('platform', 'N/A')}")
-                st.write("**Keyword appeared:** " + job.get("keyword_appeared", []))
-
-            with col2:
+            with col_button:
                 st.markdown(
-                    f"[Apply Here]({job.get('url', '#')})", unsafe_allow_html=True
+                    f"""<a href="{job.get("url", "#")}" target="_blank">
+                        <button style="width:100%; border-radius:5px; background-color:#FF4B4B; color:white; border:none; padding:10px;">
+                            Apply Here
+                        </button>
+                    </a>""",
+                    unsafe_allow_html=True,
                 )
 
         st.write("---")
