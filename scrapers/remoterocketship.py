@@ -45,11 +45,11 @@ class RemoteRocketshipScraper:
             headers=headers,
             impersonate="chrome131",
         )
+        self.logger.info(f"job_info status code {response.status_code}")
         soup = BeautifulSoup(response.text, "html.parser")
         return get_json_from_html(soup)
 
     def parse(self, response_json: dict) -> list:
-        self.logger.info(f"response_json {response_json}")
         records = []
         jobs = (
             response_json.get("props", {})
@@ -67,7 +67,6 @@ class RemoteRocketshipScraper:
                 f"https://www.remoterocketship.com/company/{company_name}/jobs/{slug}/"
             )
             job_info = self.job_information_request(url)
-            self.logger.info(f"job_info {job_info}")
             job_info_props = job_info.get("props", {}).get("pageProps", {})
             title = job.get("roleTitle")
             job_oppening = job_info_props.get("jobOpening")
