@@ -2,11 +2,7 @@ from bs4 import BeautifulSoup
 from curl_cffi import requests
 
 from logger import get_logger
-from utils import (
-    find_keyword,
-    get_json_from_html,
-    normalize_string,
-)
+from utils import find_keyword, get_json_from_html, normalize_string
 
 
 class RemoteRocketshipScraper:
@@ -67,35 +63,36 @@ class RemoteRocketshipScraper:
                 f"https://www.remoterocketship.com/company/{company_name}/jobs/{slug}/"
             )
             job_info = self.job_information_request(url)
-            job_info_props = job_info.get("props", {}).get("pageProps", {})
+            job_info = {}
+            job_info_props = job_info.get("props", {}).get("pageProps", {}) or {}
             title = job.get("roleTitle")
             job_oppening = job_info_props.get("jobOpening")
             description = "\n".join(
                 [
-                    job_oppening.get("roleDescription"),
-                    job_oppening.get("roleRequirements"),
-                    job_oppening.get("benefits"),
+                    job_oppening.get("roleDescription", ""),
+                    job_oppening.get("roleRequirements", ""),
+                    job_oppening.get("benefits", ""),
                 ]
             )
 
             location = job.get("location")
             date_posted_str = job.get("created_at")
             modality = "REMOTE"
-            keyword_appeared = find_keyword(description)
-            if keyword_appeared:
-                records.append(
-                    {
-                        "title": title,
-                        "company": normalize_string(company_name),
-                        "location": location,
-                        "url": job_oppening.get("url"),
-                        "date_posted": date_posted_str,
-                        "modality": modality,
-                        "platform": "SIMPLYHIRED",
-                        "keyword_appeared": keyword_appeared,
-                        "logo_url": company_image_url,
-                    }
-                )
+            keyword_appeared = find_keyword(description) or ""
+            # if keyword_appeared:
+            records.append(
+                {
+                    "title": title,
+                    "company": normalize_string(company_name),
+                    "location": location,
+                    "url": job.get("url"),
+                    "date_posted": date_posted_str,
+                    "modality": modality,
+                    "platform": "REMOTEROCKETSHIP",
+                    "keyword_appeared": keyword_appeared,
+                    "logo_url": company_image_url,
+                }
+            )
 
         return records
 
