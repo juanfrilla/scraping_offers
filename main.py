@@ -144,11 +144,12 @@ with st.spinner("Scraping jobs..."):
                     f"📍 {job.get('location', 'N/A')} | 💼 {job.get('modality', 'N/A')}"
                 )
                 st.write(f"📅 Posted: {date_posted} | 🌐 {job.get('platform', 'N/A')}")
+                st.write("**Keyword appeared:** " + job.get("keyword_appeared", "N/A"))
 
             with col_button:
                 st.markdown(
                     f"""<a href="{job.get("url", "#")}" target="_blank">
-                        <button style="width:100%; border-radius:5px; background-color:#FF4B4B; color:white; border:none; padding:10px;">
+                        <button style="width:100%; border-radius:5px; background-color:#007BFF; color:white; border:none; padding:10px;">
                             Apply Here
                         </button>
                     </a>""",
