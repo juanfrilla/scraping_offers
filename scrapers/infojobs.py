@@ -1,4 +1,5 @@
 import json
+import random
 import re
 
 from bs4 import BeautifulSoup
@@ -10,30 +11,52 @@ from utils import determine_modality, find_keyword, normalize_string, read_json
 
 class InfoJobsScraper:
     def __init__(self):
-        self.logger = get_logger("infojobs_scraper")
         self.session = requests.Session()
+        self.IMPERSONATE_LIST = [
+            # Chrome Desktop
+            "chrome99",
+            "chrome100",
+            "chrome101",
+            "chrome104",
+            "chrome107",
+            "chrome110",
+            "chrome116",
+            "chrome119",
+            "chrome120",
+            "chrome123",
+            "chrome124",
+            "chrome131",
+            "chrome133a",
+            "chrome136",
+            # Chrome Android
+            "chrome99_android",
+            "chrome131_android",
+            # Edge
+            "edge99",
+            "edge101",
+            # Safari Desktop
+            "safari153",
+            "safari155",
+            "safari170",
+            "safari180",
+            "safari184",
+            "safari260",
+            # Safari iOS
+            "safari172_ios",
+            "safari180_ios",
+            "safari184_ios",
+            "safari260_ios",
+            # Firefox
+            "firefox133",
+            "firefox135",
+            # Tor
+            "tor145",
+        ]
+        self.scraper_name = "Infojobs"
+        self.logger = get_logger(self.scraper_name)
 
     def infojobs_jobsearch_request(self, keyword: str):
         url = "https://www.infojobs.net/jobsearch/search-results/list.xhtml"
-        headers = {
-            "Cache-Control": "max-age=0",
-            "Sec-Ch-Ua": '"Not_A Brand";v="99", "Chromium";v="131"',
-            "Sec-Ch-Ua-Mobile": "?0",
-            "Sec-Ch-Ua-Platform": '"Windows"',
-            "Accept-Language": "es-ES,es;q=0.9",
-            "Origin": "https://www.infojobs.net",
-            "Content-Type": "application/x-www-form-urlencoded",
-            "Upgrade-Insecure-Requests": "1",
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
-            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
-            "Sec-Fetch-Site": "same-origin",
-            "Sec-Fetch-Mode": "navigate",
-            "Sec-Fetch-User": "?1",
-            "Sec-Fetch-Dest": "document",
-            "Referer": "https://www.infojobs.net/?nocache=true",
-            "Accept-Encoding": "gzip, deflate, br",
-            "Priority": "u=0, i",
-        }
         data = {
             "palabra": keyword,
             "normalizedJobTitleId": "",
@@ -43,7 +66,14 @@ class InfoJobsScraper:
             "origen_accion": "0",
             "vieneUrlExecutive": "false",
         }
-        return self.session.post(url, data=data, impersonate="chrome136")
+        return self.session.post(url, data=data, impersonate=self.get_impersonator())
+
+    def get_impersonator(self):
+        impersonate = random.choice(self.IMPERSONATE_LIST)
+        self.logger.info(
+            f"Selected Infojobs impersonate for scraping is {impersonate}."
+        )
+        return impersonate
 
     def convert_soup_to_json(self, soup: BeautifulSoup):
         target_script = None
@@ -112,7 +142,6 @@ class InfoJobsScraper:
         return locations.get(normalized, normalized)
 
     def scrape(self):
-        self.logger.info("Starting Infojobs scraping.")
         keywords = [
             "scraping",
             "crawling",
@@ -128,9 +157,7 @@ class InfoJobsScraper:
             soup = BeautifulSoup(html, "html.parser")
             json_data = self.convert_soup_to_json(soup)
             jobs = self.parse(json_data)
-            self.logger.info(f"Retrieved {len(jobs)} for {keyword}")
             all_jobs += jobs
-            self.logger.info("Finished Infojobs scraping.")
         return all_jobs
 
     def scrape_test(self):

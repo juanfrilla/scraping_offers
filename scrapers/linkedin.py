@@ -16,7 +16,6 @@ from utils import (
 
 class LinkedinScraper:
     def __init__(self):
-        self.logger = get_logger("linkedin_scraper")
         self.session = requests.Session()
 
         self.IMPERSONATE_LIST = [
@@ -59,6 +58,8 @@ class LinkedinScraper:
             # Tor
             "tor145",
         ]
+        self.scraper_name = "Linkedin"
+        self.logger = get_logger(self.scraper_name)
 
     def retrieve_offers(self) -> list:
         all_jobs = []
@@ -79,7 +80,6 @@ class LinkedinScraper:
             soup = BeautifulSoup(response.text, "html.parser")
             job_list = soup.select("li")
             jobs = [job.select_one("a")["href"].strip() for job in job_list]
-            self.logger.info(f"Retrieved {len(jobs)} for {keyword}")
             all_jobs += jobs
         return all_jobs
 
@@ -136,8 +136,6 @@ class LinkedinScraper:
         return self.make_request(url)
 
     def parse(self, urls: list) -> list:
-        self.logger.info(f"Found {len(urls)} job postings on the page.")
-
         records = []
         external_ids = set()
 
@@ -209,10 +207,8 @@ class LinkedinScraper:
         return locations.get(normalized, normalized)
 
     def scrape(self):
-        self.logger.info("Starting Linkedin scraping.")
         urls = self.retrieve_offers()
         jobs = self.parse(urls)
-        self.logger.info("Finished Linkedin scraping.")
         return jobs
 
     def scrape_test(self):

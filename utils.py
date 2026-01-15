@@ -116,3 +116,15 @@ def from_timestamp_to_isoformat(ts_ms: int):
     dt = datetime.fromtimestamp(ts_ms / 1000, tz=timezone.utc)
 
     return dt.isoformat()
+
+def filter_jobs(jobs: list) -> list:
+    urls = set()
+    filtered_jobs = []
+    for job in jobs:
+        url = job.get("url")
+        if url not in urls:
+            urls.add(url)
+            filtered_jobs.append(job)
+        else:
+            continue
+    return filtered_jobs

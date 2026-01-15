@@ -37,9 +37,13 @@ def scrape_everything():
     job_posts = []
     for ScraperClass in scrapers:
         scraper = ScraperClass()
+        scraper_name = scraper.scraper_name
+        logger = get_logger(scraper_name)
+        logger.info(f"Starting scraping {scraper_name}")
         jobs = scraper.scrape()
+        logger.info(f"Retrieved {len(jobs)} for {scraper_name}")
         job_posts += jobs
-
+        logger.info(f"Finished scraping {scraper_name}")
     return job_posts
 
 

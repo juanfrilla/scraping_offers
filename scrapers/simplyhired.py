@@ -7,6 +7,7 @@ from bs4 import BeautifulSoup
 from logger import get_logger
 from utils import (
     determine_modality,
+    filter_jobs,
     find_keyword,
     from_timestamp_to_isoformat,
     get_json_from_html,
@@ -50,12 +51,14 @@ class SimplyHiredScraper:
             # Tor
             "tor145",
         ]
+        self.scraper_name = "SimplyHired"
+        self.logger = get_logger(self.scraper_name)
 
     def get_jobs_request(self, keyword: str):
         burp0_url = f"https://www.simplyhired.es/search?q={keyword}&l=espa%25c3%25b1a"
         for impersonate in self.IMPERSONATE_LIST:
             response = self.session.get(
-                "https://www.simplyhired.es/", impersonate="chrome131"
+                "https://www.simplyhired.es/", impersonate=impersonate
             )
             self.impersonate = impersonate
             self.logger.info(f"Using {impersonate}")
@@ -78,7 +81,6 @@ class SimplyHiredScraper:
     def parse(self, jobs_data: dict) -> list:
         records = []
         jobs = jobs_data.get("props", {}).get("pageProps", {}).get("jobs", [])
-        self.logger.info(f"Found {len(jobs)} job postings on the page.")
 
         for job_id, job in enumerate(jobs):
             self.logger.info(f"Parsing job posting {job_id + 1}/{len(jobs)}")
@@ -115,7 +117,6 @@ class SimplyHiredScraper:
         return records
 
     def scrape(self):
-        self.logger.info("Finished SimplyHired scraping.")
         keywords = [
             "scraping",
             "crawling",
@@ -131,5 +132,4 @@ class SimplyHiredScraper:
             jobs = self.parse(jobs_data)
             self.logger.info(f"Retrieved {len(jobs)} for {keyword}")
             all_jobs += jobs
-        self.logger.info("Finished SimplyHired scraping.")
-        return all_jobs
+        return filter_jobs(all_jobs)
