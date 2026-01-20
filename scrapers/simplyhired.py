@@ -86,11 +86,13 @@ class SimplyHiredScraper:
             bot_url = job.get("botUrl")
             job_info = self.job_info_request(bot_url)
             job_info_props = job_info.get("props", {}).get("pageProps", {})
-            title = job.get("title")
+            title = job.get("title", "N/A")
             company = job.get("company")
 
-            description = job_info.get("description") or job_info_props.get(
-                "jobDescriptionHtml"
+            description = (
+                job_info.get("description")
+                or job_info_props.get("jobDescriptionHtml")
+                or "N/A"
             )
 
             location = job.get("location")

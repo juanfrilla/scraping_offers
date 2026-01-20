@@ -61,32 +61,17 @@ def normalize_string(s: str) -> str:
 
 
 def determine_modality(title: str, description: str) -> str:
-    title_lower = title.lower()
-    description_lower = description.lower()
+    text_to_search = f"{title} {description}".lower()
+    keywords = {
+        "Hybrid": ["hybrid", "híbrido", "hibrido", "mixto"],
+        "Remote": ["remote", "remoto", "teletrabajo", "home office"],
+        "On-site": ["on-site", "onsite", "presencial", "en oficina"],
+    }
+    for modality, terms in keywords.items():
+        if any(term in text_to_search for term in terms):
+            return modality
 
-    if (
-        "remote" in title_lower
-        or "remote" in description_lower
-        or "remoto" in title_lower
-        or "remoto" in description_lower
-    ):
-        return "Remote"
-    elif (
-        "hybrid" in title_lower
-        or "hybrid" in description_lower
-        or "híbrido" in title_lower
-        or "híbrido" in description_lower
-    ):
-        return "Hybrid"
-    elif (
-        "on-site" in title_lower
-        or "on-site" in description_lower
-        or "presencial" in title_lower
-        or "presencial" in description_lower
-    ):
-        return "On-site"
-    else:
-        return "N/A"
+    return "N/A"
 
 
 def find_keyword(text: str) -> str:
