@@ -1,6 +1,6 @@
 # 🕵️‍♂️ Job Scraping Aggregator: Spain
 
-A specialized web scraping tool designed to aggregate job postings from **LinkedIn**, **InfoJobs**, **Tecnoempleo**, **SimplyHired** and **RemoteRocketShip**. This project automates the job seeking journey by centralizing offers into a single, searchable dashboard.
+A specialized web scraping tool designed to aggregate job postings from **LinkedIn**, **InfoJobs**, **Tecnoempleo**, **SimplyHired**, **RemoteRocketShip** and **RemoteOK**. This project automates the job seeking journey by centralizing offers into a single, searchable dashboard.
 
 🚀 **Live Demo:** [scrapingoffersspain.streamlit.app](https://scrapingoffersspain.streamlit.app/)
 

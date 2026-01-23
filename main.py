@@ -11,6 +11,7 @@ from logger import get_logger
 from scrapers.empleate import EmpleateScraper
 from scrapers.infojobs import InfoJobsScraper
 from scrapers.linkedin import LinkedinScraper
+from scrapers.remoteok import RemoteOKScraper
 from scrapers.remoterocketship import RemoteRocketshipScraper
 from scrapers.simplyhired import SimplyHiredScraper
 from utils import (
@@ -27,6 +28,7 @@ def scrape_everything():
     ENV = os.getenv("ENV", "server")
     in_server = ENV == "server"
     scrapers = [
+        RemoteOKScraper,
         RemoteRocketshipScraper,
         LinkedinScraper,
         InfoJobsScraper,
@@ -112,7 +114,9 @@ with st.spinner("Scraping jobs..."):
         key=lambda x: isoparse(x["date_posted"]),
         reverse=True,
     )
-    st.title(f"Web Scraping Offers in Spain ({len(sorted_jobs_by_datetime)} results)")
+    st.title(
+        f"Web Scraping Offers in or from Spain ({len(sorted_jobs_by_datetime)} results)"
+    )
 
     for job in sorted_jobs_by_datetime:
         raw_date = job.get("date_posted")

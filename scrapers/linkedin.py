@@ -202,6 +202,9 @@ class LinkedinScraper:
             "Comunidad De Madrid, España": "Madrid",
             "Valencia/València": "Valencia",
             "Alcobendas": "Madrid",
+            "Greater Barcelona Metropolitan Area": "Barcelona",
+            "Greater Madrid Metropolitan Area": "Madrid",
+            "Vega Del Codorno": "Cuenca",
         }
         location_lower = location.lower()
         if location_lower.endswith("y alrededores"):

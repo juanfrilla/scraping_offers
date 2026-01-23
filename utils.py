@@ -8,6 +8,8 @@ from bs4 import BeautifulSoup
 
 from constants import LAST_SCRAPED_FILE
 
+JSON_TYPES = ["application/json", "application/ld+json"]
+
 
 def save_json(filename: str, data: dict):
     folder = os.path.dirname(filename)
@@ -88,13 +90,22 @@ def _json_from_ld(raw: str) -> dict:
 
 
 def get_json_from_html(soup: BeautifulSoup) -> dict:
-    types = ["application/json", "application/ld+json"]
-    for type in types:
+    for type in JSON_TYPES:
         script_tag = soup.find("script", type=type)
         if script_tag:
             raw_json_content = script_tag.string
             return _json_from_ld(raw_json_content)
     return {}
+
+
+def parse_json_jobs_data(soup: BeautifulSoup) -> list:
+    for type in JSON_TYPES:
+        data_list = []
+        scripts = soup.find_all("script", type=type) or []
+        for script in scripts:
+            json_data = _json_from_ld(script.string)
+            data_list.append(json_data)
+    return data_list
 
 
 def from_timestamp_to_isoformat(ts_ms: int):
