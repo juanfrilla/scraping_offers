@@ -8,6 +8,7 @@ FORBIDDEN_KEYWORDS = [
     "bi",
     "business development",
     "business intelligence",
+    "director",
     "editor",
     "entry level",
     "executive",
