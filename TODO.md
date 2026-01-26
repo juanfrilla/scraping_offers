@@ -8,5 +8,4 @@ migrate to Golang, deploy and save data, the data will be collected with streaml
 
 # Posiblemente meterle el free4ai para que cree cartas de presentacion basadas en la oferta, tambien teniendo tu cv y tu carta de presentacion como referencia
 
-#Meter remote ok , buscar python, javascript y typescript y buscar palabras clave dentro
-#Meter opentowork remote
+# Quizás agrupar por países
