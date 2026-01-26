@@ -199,7 +199,7 @@ class LinkedinScraper:
                 modality = determine_modality(title, description)
             determined_location = self.determine_location(location)
             external_id = f"{title}_{company}_{determined_location}"
-            keyword_appeared = find_keyword(description, title)
+            keyword_appeared = find_keyword(title, description)
             if keyword_appeared and external_id not in external_ids:
                 external_ids.add(external_id)
                 records.append(

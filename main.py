@@ -28,11 +28,11 @@ def scrape_everything():
     ENV = os.getenv("ENV", "server")
     in_server = ENV == "server"
     scrapers = [
-        # RemoteOKScraper,
-        # RemoteRocketshipScraper,
+        RemoteOKScraper,
+        RemoteRocketshipScraper,
         LinkedinScraper,
-        # InfoJobsScraper,
-        # EmpleateScraper,
+        InfoJobsScraper,
+        EmpleateScraper,
     ]
     if not in_server:
         scrapers += [SimplyHiredScraper]

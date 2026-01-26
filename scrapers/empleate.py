@@ -43,7 +43,7 @@ class EmpleateScraper:
             date_posted_str = doc.get("fechaCreacionPortal", "")
             platform = doc.get("entitytype")
             description = doc.get("contenido", "")
-            keyword_appeared = find_keyword(description, title)
+            keyword_appeared = find_keyword(title, description)
             if keyword_appeared:
                 records.append(
                     {

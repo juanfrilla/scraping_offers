@@ -98,7 +98,7 @@ class SimplyHiredScraper:
             location = job.get("location")
             date_posted_timestamp = job.get("datePublished") or job.get("dateOnIndeed")
             modality = determine_modality(title, description)
-            keyword_appeared = find_keyword(description, title)
+            keyword_appeared = find_keyword(title, description)
             if keyword_appeared:
                 records.append(
                     {
