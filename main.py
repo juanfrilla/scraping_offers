@@ -35,6 +35,7 @@ def scrape_everything():
         EmpleateScraper,
     ]
     if not in_server:
+        scrapers += []
         scrapers += [SimplyHiredScraper]
     job_posts = []
     for ScraperClass in scrapers:

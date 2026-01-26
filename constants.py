@@ -15,4 +15,5 @@ FORBIDDEN_KEYWORDS = [
     "entry level",
     "executive",
     "account",
+    "head",
 ]
