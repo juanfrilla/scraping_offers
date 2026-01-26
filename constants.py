@@ -2,18 +2,29 @@ LOG_DIR = "logs"
 DATA_FILE = "jobs.json"
 LAST_SCRAPED_FILE = "last_scraped.json"
 FORBIDDEN_KEYWORDS = [
-    "marketing",
-    "seo",
+    "account",
+    "ai",
+    "artificial intelligence",
+    "bi",
+    "business development",
     "business intelligence",
     "editor",
-    "bi",
-    "ai",
-    "scientist",
-    "lead",
-    "manager",
-    "intern",
     "entry level",
     "executive",
-    "account",
     "head",
+    "intern",
+    "lead",
+    "manager",
+    "marketing",
+    "sap",
+    "scientist",
+    "seo",
+    "veterinarian",
+]
+SEARCH_KEYWORDS = [
+    "scraping",
+    "crawling",
+    "data%20aquisition",
+    "scraper",
+    "crawler",
 ]

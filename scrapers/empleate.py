@@ -11,6 +11,7 @@ from utils import (
     normalize_string,
     read_json,
 )
+from constants import SEARCH_KEYWORDS
 
 
 class EmpleateScraper:
@@ -61,16 +62,8 @@ class EmpleateScraper:
         return records
 
     def scrape(self):
-        keywords = [
-            "scraping",
-            "crawling",
-            "data%20aquisition",
-            "data%20extraction",
-            "scraper",
-            "crawler",
-        ]
         all_jobs = []
-        for keyword in keywords:
+        for keyword in SEARCH_KEYWORDS:
             response = self.empleate_jobsearch_request(keyword)
             content = response.content
             json_data = self.convert_content_to_json(content)

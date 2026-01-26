@@ -4,6 +4,7 @@ import time
 import curl_cffi as requests
 from bs4 import BeautifulSoup
 
+from constants import SEARCH_KEYWORDS
 from logger import get_logger
 from utils import (
     determine_modality,
@@ -119,16 +120,8 @@ class SimplyHiredScraper:
         return records
 
     def scrape(self):
-        keywords = [
-            "scraping",
-            "crawling",
-            "data%20aquisition",
-            "data%20extraction",
-            "scraper",
-            "crawler",
-        ]
         all_jobs = []
-        for keyword in keywords:
+        for keyword in SEARCH_KEYWORDS:
             self.logger.info(f"Scraping word {keyword}")
             jobs_data = self.get_jobs_request(keyword)
             jobs = self.parse(jobs_data)

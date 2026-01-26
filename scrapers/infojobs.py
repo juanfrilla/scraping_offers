@@ -5,6 +5,7 @@ import re
 from bs4 import BeautifulSoup
 from curl_cffi import requests
 
+from constants import SEARCH_KEYWORDS
 from logger import get_logger
 from utils import determine_modality, find_keyword, normalize_string, read_json
 
@@ -143,16 +144,8 @@ class InfoJobsScraper:
         return locations.get(normalized, normalized)
 
     def scrape(self):
-        keywords = [
-            "scraping",
-            "crawling",
-            "data%20aquisition",
-            "data%20extraction",
-            "scraper",
-            "crawler",
-        ]
         all_jobs = []
-        for keyword in keywords:
+        for keyword in SEARCH_KEYWORDS:
             response = self.infojobs_jobsearch_request(keyword)
             html = response.text
             soup = BeautifulSoup(html, "html.parser")

@@ -5,7 +5,7 @@ from datetime import datetime
 import curl_cffi as requests
 from bs4 import BeautifulSoup
 
-from constants import FORBIDDEN_KEYWORDS
+from constants import FORBIDDEN_KEYWORDS, SEARCH_KEYWORDS
 from logger import get_logger
 from utils import (
     determine_modality,
@@ -87,28 +87,20 @@ class LinkedinScraper:
         all_jobs = []
         self.impersonate = self.get_impersonator()
 
-        keywords = [
-            "scraping",
-            "crawling",
-            "data%20aquisition",
-            "data%20extraction",
-            "scraper",
-            "crawler",
-        ]
         locations = [
             {"name": "Spain", "url_name": "Espa%C3%B1a", "geoId": "105646813"},
             {"name": "Europe", "url_name": "Europa", "geoId": "100506914"},
-            {
-                "name": "United States",
-                "url_name": "United%20States",
-                "geoId": "103644278",
-            },
+            # {
+            #     "name": "United States",
+            #     "url_name": "United%20States",
+            #     "geoId": "103644278",
+            # },
+            # At the momment i'll comment this.
         ]
 
         for location in locations:
             self.logger.info(f"--- Starting location: {location['name']} ---")
-            for keyword in keywords:
-                # 1. Ver cuántos hay para esta keyword
+            for keyword in SEARCH_KEYWORDS:
                 total_results = self.get_total_results(
                     keyword, location["url_name"], location["geoId"]
                 )

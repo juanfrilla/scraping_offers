@@ -12,7 +12,7 @@ class RemoteOKScraper:
         self.logger = get_logger(self.scraper_name)
 
     def get_jobs_request(self, keyword: str):
-        burp0_url = f"https://remoteok.com:443/?tags={keyword}&action=get_jobs&premium=0&regular=1"
+        burp0_url = f"https://remoteok.com/?tags={keyword}&action=get_jobs&premium=0&regular=1"
         return self.session.get(burp0_url, impersonate="chrome131")
 
     def parse(self, soup: BeautifulSoup) -> list:

@@ -12,7 +12,7 @@ class RemoteRocketshipScraper:
         self.logger = get_logger(self.scraper_name)
 
     def get_jobs_request(self):
-        burp0_url = "https://www.remoterocketship.com/?page=1&sort=DateAdded&jobTitle=scraping%2Ccrawling%2Cscraper%2Ccrawler%2Cdata+acquisition%2Cdata+extraction&locations=Europe%2CSpain"
+        burp0_url = "https://www.remoterocketship.com/?page=1&sort=DateAdded&jobTitle=scraping%2Ccrawling%2Cscraper%2Ccrawler%2Cdata+acquisition&locations=Europe%2CSpain"
 
         response = self.session.get(burp0_url, impersonate="chrome131")
         soup = BeautifulSoup(response.text, "html.parser")
@@ -24,7 +24,7 @@ class RemoteRocketshipScraper:
             "accept-language": "es-ES,es;q=0.9",
             "cache-control": "no-cache",
             "priority": "u=0, i",
-            "referer": "https://www.remoterocketship.com/?page=1&sort=DateAdded&jobTitle=scraping%2Ccrawling%2Cscraper%2Ccrawler%2Cdata+acquisition%2Cdata+extraction&locations=Europe%2CSpain",
+            "referer": "https://www.remoterocketship.com/?page=1&sort=DateAdded&jobTitle=scraping%2Ccrawling%2Cscraper%2Ccrawler%2Cdata+acquisition&locations=Europe%2CSpain",
             "sec-ch-ua": '"Google Chrome";v="131", "Chromium";v="131", "Not A(Brand";v="24"',
             "sec-ch-ua-mobile": "?0",
             "sec-ch-ua-platform": '"Windows"',

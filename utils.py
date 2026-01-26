@@ -79,7 +79,7 @@ def determine_modality(title: str, description: str) -> str:
 def find_keyword(title: str, text: str) -> str:
     if any(word in title.lower() for word in FORBIDDEN_KEYWORDS):
         return None
-    _PATTERN = re.compile(r"\b(crawl|scrap|acqui|extract)\w*", re.IGNORECASE)
+    _PATTERN = re.compile(r"\b(crawl|scrap|acqui)\w*", re.IGNORECASE)
     match = _PATTERN.search(text)
 
     return match.group(0) if match else None
