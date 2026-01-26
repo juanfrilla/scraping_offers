@@ -71,27 +71,46 @@ with st.spinner("Scraping jobs..."):
     logger = get_logger("main")
     jobs = get_jobs_data()
 
-    locations = sorted(list({job.get("location", "N/A") for job in jobs}))
-    companies = sorted(list({job.get("company", "N/A") for job in jobs}))
-    platforms = sorted(list({job.get("platform", "N/A") for job in jobs}))
-    modalities = sorted(list({job.get("modality", "N/A") for job in jobs}))
-
     st.sidebar.header("Filters")
-    selected_location = st.sidebar.selectbox("Location", ["All"] + locations)
-    selected_company = st.sidebar.selectbox("Company", ["All"] + companies)
+    platforms = sorted(list({job.get("platform", "N/A") for job in jobs}))
     selected_platform = st.sidebar.selectbox("Platform", ["All"] + platforms)
+
+    jobs_after_platform = [
+        j
+        for j in jobs
+        if selected_platform == "All" or j.get("platform") == selected_platform
+    ]
+    companies = sorted(list({j.get("company", "N/A") for j in jobs_after_platform}))
+    selected_company = st.sidebar.selectbox("Company", ["All"] + companies)
+
+    jobs_after_company = [
+        j
+        for j in jobs_after_platform
+        if selected_company == "All" or j.get("company") == selected_company
+    ]
+    locations = sorted(list({j.get("location", "N/A") for j in jobs_after_company}))
+    selected_location = st.sidebar.selectbox("Location", ["All"] + locations)
+
+    jobs_after_location = [
+        j
+        for j in jobs_after_company
+        if selected_location == "All" or j.get("location") == selected_location
+    ]
+    modalities = sorted(list({j.get("modality", "N/A") for j in jobs_after_location}))
     selected_modality = st.sidebar.selectbox("Modality", ["All"] + modalities)
+
     job_dates = [isoparse(job["date_posted"]).date() for job in jobs]
     min_date = min(job_dates) if job_dates else date.today()
     max_date = max(job_dates) if job_dates else date.today()
+
     date_range = st.sidebar.date_input(
         "Filter by date posted (range)",
         min_value=min_date,
         max_value=max_date,
         value=(min_date, max_date),
-        help="Select a date range to show jobs posted within it",
         format="DD/MM/YYYY",
     )
+
     if isinstance(date_range, tuple) and len(date_range) == 2:
         start_date, end_date = date_range
     else:
@@ -99,10 +118,8 @@ with st.spinner("Scraping jobs..."):
 
     filtered_jobs = [
         job
-        for job in jobs
-        if (selected_location == "All" or job.get("location") == selected_location)
-        and (selected_company == "All" or job.get("company") == selected_company)
-        and (selected_platform == "All" or job.get("platform") == selected_platform)
+        for job in jobs_after_location
+        if (selected_modality == "All" or job.get("modality") == selected_modality)
         and (
             (not start_date or not end_date)
             or (start_date <= isoparse(job["date_posted"]).date() <= end_date)

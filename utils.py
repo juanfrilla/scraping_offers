@@ -6,7 +6,7 @@ from datetime import date, datetime, timezone
 
 from bs4 import BeautifulSoup
 
-from constants import LAST_SCRAPED_FILE
+from constants import FORBIDDEN_KEYWORDS, LAST_SCRAPED_FILE
 
 JSON_TYPES = ["application/json", "application/ld+json"]
 
@@ -77,22 +77,8 @@ def determine_modality(title: str, description: str) -> str:
 
 
 def find_keyword(title: str, text: str) -> str:
-    # 1. Filtro fulminante: si el título tiene basura, fuera
-    forbidden = [
-        "marketing",
-        "seo",
-        "business intelligence",
-        "editor",
-        "bi",
-        "ai",
-        "scientist",
-        "lead",
-        "manager",
-    ]
-    if any(word in title.lower() for word in forbidden):
+    if any(word in title.lower() for word in FORBIDDEN_KEYWORDS):
         return None
-
-    # 2. Tu lógica original sobre el texto (description o el mismo título)
     _PATTERN = re.compile(r"\b(crawl|scrap|acqui|extract)\w*", re.IGNORECASE)
     match = _PATTERN.search(text)
 

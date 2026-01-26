@@ -76,32 +76,49 @@ class LinkedinScraper:
             "crawler",
         ]
 
+        # He añadido el campo 'url_name' para el parámetro &location=
         locations = [
-            {"name": "Spain", "geoId": "105646813"},
-            {"name": "Europe", "geoId": "100506914"},
-            {"name": "United States", "geoId": "103644278"},
+            {"name": "Spain", "url_name": "Espa%C3%B1a", "geoId": "105646813"},
+            {"name": "Europe", "url_name": "Europa", "geoId": "100506914"},
+            {
+                "name": "United States",
+                "url_name": "United%20States",
+                "geoId": "103644278",
+            },
         ]
+
+        FORBIDDEN_KEYWORDS = ["marketing", "seo", "business intelligence"]
 
         for location in locations:
             self.logger.info(f"Searching in {location['name']}")
             for keyword in keywords:
                 self.logger.info(f"Searching word {keyword} in {location['name']}")
-                # Pasamos el geoId a la función de petición
-                response = self.linkedin_jobsearch_request(keyword, location["geoId"])
+                location_name = location["url_name"]
+                geo_id = location["geoId"]
+                self.job_search_url = f"https://www.linkedin.com/jobs-guest/jobs/api/seeMoreJobPostings/search?keywords=%22{keyword}%22&location={location_name}&geoId={geo_id}&start=0&f_WT=2"
+                response = self.linkedin_jobsearch_request()
 
                 if response and response.status_code == 200:
                     soup = BeautifulSoup(response.text, "html.parser")
                     job_list = soup.select("li")
-                    jobs = [
-                        job.select_one("a")["href"].strip()
-                        for job in job_list
-                        if job.select_one("a")
-                    ]
-                    all_jobs += jobs
 
-        return list(
-            set(all_jobs)
-        )  # Eliminamos duplicados por si una oferta sale en varias keywords
+                    for job in job_list:
+                        link_tag = job.select_one("a")
+                        if link_tag:
+                            title = link_tag.get_text(strip=True).lower()
+                            href = link_tag["href"].strip()
+
+                            if any(
+                                forbidden in title for forbidden in FORBIDDEN_KEYWORDS
+                            ):
+                                self.logger.info(
+                                    f"Skipping job: {title} (Forbidden word found)"
+                                )
+                                continue
+
+                            all_jobs.append(href)
+
+        return list(set(all_jobs))
 
     def get_impersonator(self):
         impersonate = random.choice(self.IMPERSONATE_LIST)
@@ -149,16 +166,8 @@ class LinkedinScraper:
         self.logger.error(f"Failed to fetch {url} after {max_retries} retries.")
         return None
 
-    def linkedin_jobsearch_request(self, keyword="scraping", geo_id="105646813"):
-        # Añadimos el parámetro f_WT=2 para filtrar específicamente por trabajo REMOTO
-        url = (
-            f"https://www.linkedin.com/jobs-guest/jobs/api/seeMoreJobPostings/search?"
-            f"keywords=%22{keyword}%22"
-            f"&geoId={geo_id}"
-            f"&f_WT=2"  # f_WT=2 es el filtro de "Remote" en LinkedIn
-            f"&start=0"
-        )
-
+    def linkedin_jobsearch_request(self):
+        url = self.job_search_url
         self.logger.info(f"Scraping {url}")
         return self.make_request(url)
 
