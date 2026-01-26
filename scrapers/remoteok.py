@@ -35,7 +35,7 @@ class RemoteOKScraper:
                     for loc in job_json.get("applicantLocationRequirements", [])
                 ]
             )
-            keyword_appeared = find_keyword(expanded_description)
+            keyword_appeared = find_keyword(expanded_description, title)
             if keyword_appeared:
                 records.append(
                     {

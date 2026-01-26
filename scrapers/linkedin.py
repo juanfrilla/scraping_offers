@@ -66,6 +66,7 @@ class LinkedinScraper:
         impersonate = self.get_impersonator()
         self.logger.info(f"using {impersonate}")
         self.impersonate = impersonate
+
         keywords = [
             "scraping",
             "crawling",
@@ -74,14 +75,33 @@ class LinkedinScraper:
             "scraper",
             "crawler",
         ]
-        for keyword in keywords:
-            self.logger.info(f"Searching word {keyword}")
-            response = self.linkedin_jobsearch_request(keyword)
-            soup = BeautifulSoup(response.text, "html.parser")
-            job_list = soup.select("li")
-            jobs = [job.select_one("a")["href"].strip() for job in job_list]
-            all_jobs += jobs
-        return all_jobs
+
+        locations = [
+            {"name": "Spain", "geoId": "105646813"},
+            {"name": "Europe", "geoId": "100506914"},
+            {"name": "United States", "geoId": "103644278"},
+        ]
+
+        for location in locations:
+            self.logger.info(f"Searching in {location['name']}")
+            for keyword in keywords:
+                self.logger.info(f"Searching word {keyword} in {location['name']}")
+                # Pasamos el geoId a la función de petición
+                response = self.linkedin_jobsearch_request(keyword, location["geoId"])
+
+                if response and response.status_code == 200:
+                    soup = BeautifulSoup(response.text, "html.parser")
+                    job_list = soup.select("li")
+                    jobs = [
+                        job.select_one("a")["href"].strip()
+                        for job in job_list
+                        if job.select_one("a")
+                    ]
+                    all_jobs += jobs
+
+        return list(
+            set(all_jobs)
+        )  # Eliminamos duplicados por si una oferta sale en varias keywords
 
     def get_impersonator(self):
         impersonate = random.choice(self.IMPERSONATE_LIST)
@@ -129,8 +149,15 @@ class LinkedinScraper:
         self.logger.error(f"Failed to fetch {url} after {max_retries} retries.")
         return None
 
-    def linkedin_jobsearch_request(self, keyword="scraping"):
-        url = f"https://www.linkedin.com/jobs-guest/jobs/api/seeMoreJobPostings/search?keywords=%22{keyword}%22&location=Espa%C3%B1a&geoId=105646813&start=0"
+    def linkedin_jobsearch_request(self, keyword="scraping", geo_id="105646813"):
+        # Añadimos el parámetro f_WT=2 para filtrar específicamente por trabajo REMOTO
+        url = (
+            f"https://www.linkedin.com/jobs-guest/jobs/api/seeMoreJobPostings/search?"
+            f"keywords=%22{keyword}%22"
+            f"&geoId={geo_id}"
+            f"&f_WT=2"  # f_WT=2 es el filtro de "Remote" en LinkedIn
+            f"&start=0"
+        )
 
         self.logger.info(f"Scraping {url}")
         return self.make_request(url)
@@ -172,7 +199,7 @@ class LinkedinScraper:
                 modality = determine_modality(title, description)
             determined_location = self.determine_location(location)
             external_id = f"{title}_{company}_{determined_location}"
-            keyword_appeared = find_keyword(description)
+            keyword_appeared = find_keyword(description, title)
             if keyword_appeared and external_id not in external_ids:
                 external_ids.add(external_id)
                 records.append(

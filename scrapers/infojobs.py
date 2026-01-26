@@ -110,7 +110,7 @@ class InfoJobsScraper:
             modality = offer.get("teleworking") or determine_modality(
                 title, description
             )
-            keyword_appeared = find_keyword(description)
+            keyword_appeared = find_keyword(description, title)
             if keyword_appeared:
                 records.append(
                     {

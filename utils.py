@@ -76,10 +76,16 @@ def determine_modality(title: str, description: str) -> str:
     return "N/A"
 
 
-def find_keyword(text: str) -> str:
-    _PATTERN = re.compile(r"\b(crawl|scrap|acqui|extract)\w*", re.IGNORECASE)
+def find_keyword(title: str, text: str) -> str:
+    # 1. Filtro fulminante: si el título tiene basura, fuera
+    forbidden = ["marketing", "seo", "business intelligence"]
+    if any(word in title.lower() for word in forbidden):
+        return None
 
+    # 2. Tu lógica original sobre el texto (description o el mismo título)
+    _PATTERN = re.compile(r"\b(crawl|scrap|acqui|extract)\w*", re.IGNORECASE)
     match = _PATTERN.search(text)
+
     return match.group(0) if match else None
 
 
