@@ -78,7 +78,17 @@ def determine_modality(title: str, description: str) -> str:
 
 def find_keyword(title: str, text: str) -> str:
     # 1. Filtro fulminante: si el título tiene basura, fuera
-    forbidden = ["marketing", "seo", "business intelligence"]
+    forbidden = [
+        "marketing",
+        "seo",
+        "business intelligence",
+        "editor",
+        "bi",
+        "ai",
+        "scientist",
+        "lead",
+        "manager",
+    ]
     if any(word in title.lower() for word in forbidden):
         return None
 
