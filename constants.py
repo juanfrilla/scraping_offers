@@ -38,4 +38,11 @@ SEARCH_KEYWORDS = [
     "scraper",
     "crawler",
 ]
-FORBIDDEN_COMPANIES = ["infatica.io", "searchapi", "corsearch", "mindrift", "wayops"]
+FORBIDDEN_COMPANIES = [
+    "infatica.io",
+    "searchapi",
+    "corsearch",
+    "mindrift",
+    "wayops",
+    "duckduckgo",
+]
