@@ -104,7 +104,7 @@ class LinkedinScraper:
                     keyword, location["url_name"], location["geoId"]
                 )
                 self.logger.info(
-                    f"Total potential results for {keyword}: {total_results}"
+                    f"Total potential results for {keyword} in {location['name']}: {total_results}"
                 )
                 max_fetch = min(total_results, 200) if total_results > 0 else 25
                 start = 0
