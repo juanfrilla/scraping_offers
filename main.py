@@ -11,7 +11,7 @@ from logger import get_logger
 
 # from scrapers.empleate import EmpleateScraper
 # from scrapers.infojobs import InfoJobsScraper
-# from scrapers.linkedin import LinkedinScraper
+from scrapers.linkedin import LinkedinScraper
 # from scrapers.remoteok import RemoteOKScraper
 # from scrapers.remoterocketship import RemoteRocketshipScraper
 from scrapers.simplyhired import SimplyHiredScraper
@@ -31,7 +31,7 @@ def scrape_everything():
     scrapers = [
         # RemoteOKScraper,
         # RemoteRocketshipScraper,
-        # LinkedinScraper,
+        LinkedinScraper,
         # InfoJobsScraper,
         # EmpleateScraper,
     ]

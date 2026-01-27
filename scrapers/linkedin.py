@@ -5,7 +5,7 @@ from datetime import datetime
 import curl_cffi as requests
 from bs4 import BeautifulSoup
 
-from constants import FORBIDDEN_KEYWORDS, SEARCH_KEYWORDS
+from constants import FORBIDDEN_COMPANIES, FORBIDDEN_KEYWORDS, SEARCH_KEYWORDS
 from logger import get_logger
 from utils import (
     determine_modality,
@@ -135,13 +135,28 @@ class LinkedinScraper:
 
                     for job in job_list:
                         link_tag = job.select_one("a")
+                        company_tag = job.select_one(".base-search-card__subtitle, h4")
                         if link_tag:
                             title = link_tag.get_text(strip=True).lower()
                             href = link_tag["href"].strip()
+                            company_name = (
+                                company_tag.get_text(strip=True).lower()
+                                if company_tag
+                                else ""
+                            )
 
                             if any(
                                 forbidden in title for forbidden in FORBIDDEN_KEYWORDS
                             ):
+                                continue
+
+                            if any(
+                                company in company_name
+                                for company in FORBIDDEN_COMPANIES
+                            ):
+                                self.logger.info(
+                                    f"Skipping forbidden company: {company_name}"
+                                )
                                 continue
 
                             all_jobs.append(href)
