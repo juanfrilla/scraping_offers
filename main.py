@@ -8,11 +8,12 @@ from dotenv import load_dotenv
 
 from constants import DATA_FILE, LOG_DIR
 from logger import get_logger
-from scrapers.empleate import EmpleateScraper
-from scrapers.infojobs import InfoJobsScraper
-from scrapers.linkedin import LinkedinScraper
-from scrapers.remoteok import RemoteOKScraper
-from scrapers.remoterocketship import RemoteRocketshipScraper
+
+# from scrapers.empleate import EmpleateScraper
+# from scrapers.infojobs import InfoJobsScraper
+# from scrapers.linkedin import LinkedinScraper
+# from scrapers.remoteok import RemoteOKScraper
+# from scrapers.remoterocketship import RemoteRocketshipScraper
 from scrapers.simplyhired import SimplyHiredScraper
 from utils import (
     last_scraped_today,
@@ -28,11 +29,11 @@ def scrape_everything():
     ENV = os.getenv("ENV", "server")
     in_server = ENV == "server"
     scrapers = [
-        RemoteOKScraper,
-        RemoteRocketshipScraper,
-        LinkedinScraper,
-        InfoJobsScraper,
-        EmpleateScraper,
+        # RemoteOKScraper,
+        # RemoteRocketshipScraper,
+        # LinkedinScraper,
+        # InfoJobsScraper,
+        # EmpleateScraper,
     ]
     if not in_server:
         scrapers += []

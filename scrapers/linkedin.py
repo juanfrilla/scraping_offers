@@ -90,12 +90,11 @@ class LinkedinScraper:
         locations = [
             {"name": "Spain", "url_name": "Espa%C3%B1a", "geoId": "105646813"},
             {"name": "Europe", "url_name": "Europa", "geoId": "100506914"},
-            # {
-            #     "name": "United States",
-            #     "url_name": "United%20States",
-            #     "geoId": "103644278",
-            # },
-            # At the momment i'll comment this.
+            {
+                "name": "United States",
+                "url_name": "United%20States",
+                "geoId": "103644278",
+            },
         ]
 
         for location in locations:
