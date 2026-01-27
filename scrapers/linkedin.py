@@ -236,7 +236,7 @@ class LinkedinScraper:
                     raw_date_posted_str = offer_soup.find("time")["datetime"].strip()
                 except Exception:
                     self.logger.info(f"Erroneous date or not found for {url}")
-                    raw_date_posted_str = today_str  # Fecha por defecto aquí
+                    raw_date_posted_str = today_str
                 date_posted_str = f"{raw_date_posted_str}T00:00:00Z"
                 raw_description = offer_soup.find("div", class_="description__text")
                 description = self.get_text(raw_description)
