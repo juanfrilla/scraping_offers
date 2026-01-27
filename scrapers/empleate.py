@@ -3,6 +3,7 @@ import re
 
 import curl_cffi as requests
 
+from constants import FORBIDDEN_COMPANIES, SEARCH_KEYWORDS
 from logger import get_logger
 from utils import (
     determine_modality,
@@ -11,7 +12,6 @@ from utils import (
     normalize_string,
     read_json,
 )
-from constants import SEARCH_KEYWORDS
 
 
 class EmpleateScraper:
@@ -45,7 +45,7 @@ class EmpleateScraper:
             platform = doc.get("entitytype")
             description = doc.get("contenido", "")
             keyword_appeared = find_keyword(title, description)
-            if keyword_appeared:
+            if keyword_appeared and company.lower() not in FORBIDDEN_COMPANIES:
                 records.append(
                     {
                         "title": title,

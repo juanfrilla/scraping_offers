@@ -1,6 +1,7 @@
 import curl_cffi as requests
 from bs4 import BeautifulSoup
 
+from constants import FORBIDDEN_COMPANIES
 from logger import get_logger
 from utils import find_keyword, get_json_from_html, normalize_string
 
@@ -12,7 +13,9 @@ class RemoteOKScraper:
         self.logger = get_logger(self.scraper_name)
 
     def get_jobs_request(self, keyword: str):
-        burp0_url = f"https://remoteok.com/?tags={keyword}&action=get_jobs&premium=0&regular=1"
+        burp0_url = (
+            f"https://remoteok.com/?tags={keyword}&action=get_jobs&premium=0&regular=1"
+        )
         return self.session.get(burp0_url, impersonate="chrome131")
 
     def parse(self, soup: BeautifulSoup) -> list:
@@ -36,7 +39,7 @@ class RemoteOKScraper:
                 ]
             )
             keyword_appeared = find_keyword(title, expanded_description)
-            if keyword_appeared:
+            if keyword_appeared and company.lower() not in FORBIDDEN_COMPANIES:
                 records.append(
                     {
                         "title": title,

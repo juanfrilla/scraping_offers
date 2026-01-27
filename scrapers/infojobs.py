@@ -5,7 +5,7 @@ import re
 from bs4 import BeautifulSoup
 from curl_cffi import requests
 
-from constants import SEARCH_KEYWORDS
+from constants import SEARCH_KEYWORDS, FORBIDDEN_COMPANIES
 from logger import get_logger
 from utils import determine_modality, find_keyword, normalize_string, read_json
 
@@ -112,7 +112,7 @@ class InfoJobsScraper:
                 title, description
             )
             keyword_appeared = find_keyword(title, description)
-            if keyword_appeared:
+            if keyword_appeared and company.lower() not in FORBIDDEN_COMPANIES:
                 records.append(
                     {
                         "title": title,

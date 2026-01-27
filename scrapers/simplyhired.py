@@ -4,7 +4,7 @@ import time
 import curl_cffi as requests
 from bs4 import BeautifulSoup
 
-from constants import SEARCH_KEYWORDS
+from constants import FORBIDDEN_COMPANIES, SEARCH_KEYWORDS
 from logger import get_logger
 from utils import (
     determine_modality,
@@ -100,7 +100,7 @@ class SimplyHiredScraper:
             date_posted_timestamp = job.get("datePublished") or job.get("dateOnIndeed")
             modality = determine_modality(title, description)
             keyword_appeared = find_keyword(title, description)
-            if keyword_appeared:
+            if keyword_appeared and company.lower() not in FORBIDDEN_COMPANIES:
                 records.append(
                     {
                         "title": title,
