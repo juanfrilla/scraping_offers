@@ -81,10 +81,13 @@ class SimplyHiredScraper:
     def parse(self, jobs_data: dict) -> list:
         records = []
         jobs = jobs_data.get("props", {}).get("pageProps", {}).get("jobs", [])
-
+        jobs_url = set()
         for job_id, job in enumerate(jobs):
             self.logger.info(f"Parsing job posting {job_id + 1}/{len(jobs)}")
             bot_url = job.get("botUrl")
+            if bot_url in jobs_url:
+                continue
+            jobs_url.add(bot_url)
             job_info = self.job_info_request(bot_url)
             job_info_props = job_info.get("props", {}).get("pageProps", {})
             title = job.get("title", "N/A")
