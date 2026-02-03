@@ -4,7 +4,7 @@ import time
 import curl_cffi as requests
 from bs4 import BeautifulSoup
 
-from constants import FORBIDDEN_COMPANIES, SEARCH_KEYWORDS
+from constants import FORBIDDEN_COMPANIES, FORBIDDEN_KEYWORDS, SEARCH_KEYWORDS
 from logger import get_logger
 from utils import (
     determine_modality,
@@ -88,9 +88,12 @@ class SimplyHiredScraper:
             if bot_url in jobs_url:
                 continue
             jobs_url.add(bot_url)
+            title = job.get("title", "N/A")
+            if any(forbidden in title for forbidden in FORBIDDEN_KEYWORDS):
+                continue
             job_info = self.job_info_request(bot_url)
             job_info_props = job_info.get("props", {}).get("pageProps", {})
-            title = job.get("title", "N/A")
+
             company = job.get("company")
 
             description = (
@@ -103,6 +106,7 @@ class SimplyHiredScraper:
             date_posted_timestamp = job.get("datePublished") or job.get("dateOnIndeed")
             modality = determine_modality(title, description)
             keyword_appeared = find_keyword(title, description)
+
             if keyword_appeared and company.lower() not in FORBIDDEN_COMPANIES:
                 records.append(
                     {

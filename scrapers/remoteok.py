@@ -1,7 +1,7 @@
 import curl_cffi as requests
 from bs4 import BeautifulSoup
 
-from constants import FORBIDDEN_COMPANIES
+from constants import FORBIDDEN_COMPANIES, FORBIDDEN_KEYWORDS
 from logger import get_logger
 from utils import find_keyword, get_json_from_html, normalize_string
 
@@ -21,7 +21,6 @@ class RemoteOKScraper:
     def parse(self, soup: BeautifulSoup) -> list:
         records = []
         jobs = soup.select("tr.job")
-        # jobs = parse_json_jobs_data(soup)
         for job_id, job in enumerate(jobs):
             data_id = job.get("data-id")
             expanded_description = soup.select(f"tr.expand.expand-{data_id}")[0].text
@@ -38,6 +37,8 @@ class RemoteOKScraper:
                     for loc in job_json.get("applicantLocationRequirements", [])
                 ]
             )
+            if any(forbidden in title for forbidden in FORBIDDEN_KEYWORDS):
+                continue
             keyword_appeared = find_keyword(title, expanded_description)
             if keyword_appeared and company.lower() not in FORBIDDEN_COMPANIES:
                 records.append(
