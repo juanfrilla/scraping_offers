@@ -88,6 +88,7 @@ def find_keyword(title: str, text: str) -> str:
 def _json_from_ld(raw: str) -> dict:
     clean = raw.strip()
     clean = html.unescape(clean)
+    clean = clean.replace("}{", "},{")
     return json.loads(clean)
 
 
