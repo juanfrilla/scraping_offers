@@ -56,14 +56,8 @@ def scrape_everything_parallel():
         scrapers += [SimplyHiredScraper]
 
     job_posts = []
-
-    # Usamos ThreadPoolExecutor para ejecutar en paralelo
-    # max_workers define cuántos scrapers corren al mismo tiempo
     with ThreadPoolExecutor(max_workers=len(scrapers)) as executor:
-        # Mapeamos la lista de clases a la función de ejecución
         results = list(executor.map(run_single_scraper, scrapers))
-
-    # Aplanamos la lista de listas (flatten)
     for jobs in results:
         job_posts += jobs
 
