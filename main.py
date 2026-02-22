@@ -1,5 +1,6 @@
 import os
 import threading
+from concurrent.futures import ThreadPoolExecutor
 from datetime import date, datetime, timezone
 
 import streamlit as st
@@ -24,9 +25,26 @@ from utils import (
 load_dotenv()
 
 
-def scrape_everything():
+def run_single_scraper(ScraperClass):
+    """Función auxiliar para ejecutar un solo scraper"""
+    scraper = ScraperClass()
+    scraper_name = scraper.scraper_name
+    logger = get_logger(scraper_name)
+
+    try:
+        logger.info(f"Starting scraping {scraper_name}")
+        jobs = scraper.scrape()
+        logger.info(f"Retrieved {len(jobs)} for {scraper_name}")
+        return jobs
+    except Exception as e:
+        logger.error(f"Error in {scraper_name}: {str(e)}")
+        return []
+
+
+def scrape_everything_parallel():
     ENV = os.getenv("ENV", "server")
     in_server = ENV == "server"
+
     scrapers = [
         RemoteOKScraper,
         RemoteRocketshipScraper,
@@ -36,16 +54,19 @@ def scrape_everything():
     ]
     if not in_server:
         scrapers += [SimplyHiredScraper]
+
     job_posts = []
-    for ScraperClass in scrapers:
-        scraper = ScraperClass()
-        scraper_name = scraper.scraper_name
-        logger = get_logger(scraper_name)
-        logger.info(f"Starting scraping {scraper_name}")
-        jobs = scraper.scrape()
-        logger.info(f"Retrieved {len(jobs)} for {scraper_name}")
+
+    # Usamos ThreadPoolExecutor para ejecutar en paralelo
+    # max_workers define cuántos scrapers corren al mismo tiempo
+    with ThreadPoolExecutor(max_workers=len(scrapers)) as executor:
+        # Mapeamos la lista de clases a la función de ejecución
+        results = list(executor.map(run_single_scraper, scrapers))
+
+    # Aplanamos la lista de listas (flatten)
+    for jobs in results:
         job_posts += jobs
-        logger.info(f"Finished scraping {scraper_name}")
+
     return job_posts
 
 
@@ -60,7 +81,7 @@ def get_jobs_data():
     with lock:
         if last_scraped_today() and os.path.exists(DATA_FILE):
             return read_json(DATA_FILE)
-        jobs = scrape_everything()
+        jobs = scrape_everything_parallel()
         save_json(DATA_FILE, jobs)
         update_last_scraped()
         return jobs
