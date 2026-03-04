@@ -47,7 +47,6 @@ SEARCH_KEYWORDS = [
 ]
 FORBIDDEN_COMPANIES = [
     "infatica.io",
-    "searchapi",
     "corsearch",
     "mindrift",
     "wayops",
