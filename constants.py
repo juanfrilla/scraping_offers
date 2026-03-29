@@ -9,7 +9,6 @@ FORBIDDEN_KEYWORDS = [
     "brand",
     "business development",
     "business intelligence",
-    "content",
     "deal",
     "director",
     "editor",

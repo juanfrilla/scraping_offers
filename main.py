@@ -46,11 +46,11 @@ def scrape_everything_parallel():
     in_server = ENV == "server"
 
     scrapers = [
-        RemoteOKScraper,
-        RemoteRocketshipScraper,
-        LinkedinScraper,
-        InfoJobsScraper,
-        EmpleateScraper,
+        # RemoteOKScraper,
+        # RemoteRocketshipScraper,
+        # LinkedinScraper,
+        # InfoJobsScraper,
+        # EmpleateScraper,
     ]
     if not in_server:
         scrapers += [SimplyHiredScraper]
