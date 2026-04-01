@@ -43,6 +43,8 @@ SEARCH_KEYWORDS = [
     "data%20aquisition",
     "scraper",
     "crawler",
+    "anti-bot",
+    "antibot",
 ]
 FORBIDDEN_COMPANIES = [
     "infatica.io",
