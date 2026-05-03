@@ -52,4 +52,6 @@ FORBIDDEN_COMPANIES = [
     "mindrift",
     "wayops",
     "duckduckgo",
+    "firstsource",
+    "searchapi",
 ]
