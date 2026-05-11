@@ -4,3 +4,4 @@
 __pycache__/
 jobs.json
 last_scraped.json
+/playground
