@@ -74,10 +74,6 @@ class InfoJobsScraper:
             "vieneUrlExecutive": "false",
         }
         impersonator = self.get_impersonator()
-        response = self.session.get(
-            "https://tls.peet.ws/api/all", impersonate="chrome146"
-        )
-        save_json("curl_cffi146.json", response.json())
         return self.session.post(url, data=data, impersonate=impersonator)
 
     def get_impersonator(self):
