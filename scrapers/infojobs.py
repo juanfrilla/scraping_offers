@@ -7,7 +7,13 @@ from curl_cffi import requests
 
 from constants import FORBIDDEN_COMPANIES, FORBIDDEN_KEYWORDS, SEARCH_KEYWORDS
 from logger import get_logger
-from utils import determine_modality, find_keyword, normalize_string, read_json
+from utils import (
+    determine_modality,
+    find_keyword,
+    normalize_string,
+    read_json,
+    save_json,
+)
 
 
 class InfoJobsScraper:
@@ -67,7 +73,12 @@ class InfoJobsScraper:
             "origen_accion": "0",
             "vieneUrlExecutive": "false",
         }
-        return self.session.post(url, data=data, impersonate=self.get_impersonator())
+        impersonator = self.get_impersonator()
+        response = self.session.get(
+            "https://tls.peet.ws/api/all", impersonate="chrome146"
+        )
+        save_json("curl_cffi146.json", response.json())
+        return self.session.post(url, data=data, impersonate=impersonator)
 
     def get_impersonator(self):
         impersonate = random.choice(self.IMPERSONATE_LIST)

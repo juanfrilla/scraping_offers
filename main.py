@@ -46,14 +46,14 @@ def scrape_everything_parallel():
     in_server = ENV == "server"
 
     scrapers = [
-        RemoteOKScraper,
-        RemoteRocketshipScraper,
-        LinkedinScraper,
+        # RemoteOKScraper,
+        # RemoteRocketshipScraper,
+        # LinkedinScraper,
         InfoJobsScraper,
-        EmpleateScraper,
+        # EmpleateScraper,
     ]
     if not in_server:
-        scrapers += [SimplyHiredScraper]
+        scrapers += []
 
     job_posts = []
     with ThreadPoolExecutor(max_workers=len(scrapers)) as executor:
