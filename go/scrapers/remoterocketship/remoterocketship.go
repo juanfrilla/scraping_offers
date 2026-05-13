@@ -5,13 +5,11 @@ import (
 	"fmt"
 	"io"
 	"log"
-	"math/rand"
 	"os"
 	"scraping_offers/go/constants"
 	"scraping_offers/go/models"
 	"scraping_offers/go/utils"
 	"strings"
-	"time"
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/sardanioss/httpcloak/client"
@@ -60,7 +58,6 @@ func (rrs *RemoteRocketshipScraper) parse(responseJSON *RemoteRockJobList) []mod
 	for jobID, job := range jobs {
 
 		rrs.Logger.Printf("[%s] Parsing job posting %d/%d", rrs.ScraperName, jobID+1, len(jobs))
-
 		companyInfo := job.Company
 		companyName := strings.ReplaceAll(companyInfo.Name, " ", "-")
 		company := utils.NormalizeString(companyName)
@@ -70,60 +67,147 @@ func (rrs *RemoteRocketshipScraper) parse(responseJSON *RemoteRockJobList) []mod
 		jobURL := fmt.Sprintf("https://www.remoterocketship.com/company/%s/jobs/%s/", companyName, slug)
 
 		if utils.IsForbidden(company, constants.ForbiddenCompanies) {
+			rrs.Logger.Printf("Discarding company %s", company)
 			continue
 		}
 
-		resp, err := rrs.jobInformationRequest(jobURL)
-		if err != nil {
-			log.Fatal("error fetching job info: %w", err)
+		var description string
+
+		if utils.IsLocal() {
+			resp, err := rrs.jobInformationRequest(jobURL)
+			if err != nil {
+				log.Printf("error fetching job info: %v", err)
+				continue
+			}
+			defer resp.Body.Close()
+
+			bodyBytes, err := io.ReadAll(resp.Body)
+			if err != nil {
+				log.Printf("error reading body: %v", err)
+				continue
+			}
+
+			doc, err := goquery.NewDocumentFromReader(strings.NewReader(string(bodyBytes)))
+			if err != nil {
+				log.Printf("error parsing job HTML: %v", err)
+				continue
+			}
+
+			utils.GetJSONFromHTML(doc, &singleJob)
+
+			p := singleJob.Props
+			jobInfoProps := p.PageProps
+			jobOpening := jobInfoProps.JobOpening
+
+			description = strings.Join([]string{
+				jobOpening.RoleDescription,
+				jobOpening.RoleRequirements,
+				jobOpening.Benefits,
+			}, "\n")
+		} else {
+			description = ""
 		}
-		defer resp.Body.Close()
-
-		bodyBytes, err := io.ReadAll(resp.Body)
-		doc, err := goquery.NewDocumentFromReader(strings.NewReader(string(bodyBytes)))
-		if err != nil {
-			log.Fatal("error parsing job HTML: %w", err)
-		}
-
-		utils.GetJSONFromHTML(doc, singleJob)
-
-		p := singleJob.Props
-		jobInfoProps := p.PageProps
-
 		title := job.RoleTitle
-		jobOpening := jobInfoProps.JobOpening
-		description := strings.Join([]string{
-			jobOpening.RoleDescription,
-			jobOpening.RoleRequirements,
-			jobOpening.Benefits,
-		}, "\n")
-
 		location := job.Location
 		datePosted := job.CreatedAt
-
-		keyword := utils.FindKeywordInDescription(description)
-		if keyword != "" && !utils.IsForbidden(company, constants.ForbiddenCompanies) && !utils.IsForbidden(title, constants.ForbiddenKeywords) {
-
-			record := models.ScrapedJob{
-				Title:           title,
-				Company:         company,
-				Location:        location,
-				URL:             job.URL,
-				DatePosted:      utils.FromTimestampToISOFormat(datePosted.UnixMilli()),
-				Modality:        "Remote",
-				Platform:        rrs.ScraperName,
-				KeywordAppeared: keyword,
-				LogoURL:         companyImageURL,
-			}
-			records = append(records, record)
+		var keyword string
+		if utils.IsLocal() {
+			
+			keyword = utils.FindKeywordInDescription(description)
 		} else {
-			rrs.Logger.Printf("Discarding title %s from company %s", title, company)
-			continue
+			keyword = ""
 		}
+
+		record := models.ScrapedJob{
+			Title:           title,
+			Company:         company,
+			Location:        location,
+			URL:             job.URL,
+			DatePosted:      utils.FromTimestampToISOFormat(datePosted.UnixMilli()),
+			Modality:        "Remote",
+			Platform:        rrs.ScraperName,
+			KeywordAppeared: keyword,
+			LogoURL:         companyImageURL,
+		}
+
+		records = append(records, record)
 	}
 
 	return records
 }
+
+// func (rrs *RemoteRocketshipScraper) parse(responseJSON *RemoteRockJobList) []models.ScrapedJob {
+// 	var records []models.ScrapedJob
+// 	var singleJob RemoteRockJob
+// 	props := responseJSON.Props
+// 	pageProps := props.PageProps
+// 	jobs := pageProps.InitialJobOpenings
+
+// 	for jobID, job := range jobs {
+
+// 		rrs.Logger.Printf("[%s] Parsing job posting %d/%d", rrs.ScraperName, jobID+1, len(jobs))
+
+// 		companyInfo := job.Company
+// 		companyName := strings.ReplaceAll(companyInfo.Name, " ", "-")
+// 		company := utils.NormalizeString(companyName)
+// 		companyImageURL := companyInfo.ProfilePicURL
+// 		slug := job.Slug
+
+// 		jobURL := fmt.Sprintf("https://www.remoterocketship.com/company/%s/jobs/%s/", companyName, slug)
+
+// 		if utils.IsForbidden(company, constants.ForbiddenCompanies) {
+// 			rrs.Logger.Printf("Discarding company %s", company)
+// 			continue
+// 		}
+
+// 		resp, err := rrs.jobInformationRequest(jobURL)
+// 		if err != nil {
+// 			log.Printf("error fetching job info: %w", err)
+// 			continue
+// 		}
+// 		defer resp.Body.Close()
+
+// 		bodyBytes, err := io.ReadAll(resp.Body)
+// 		doc, err := goquery.NewDocumentFromReader(strings.NewReader(string(bodyBytes)))
+// 		if err != nil {
+// 			log.Fatal("error parsing job HTML: %w", err)
+// 		}
+
+// 		utils.GetJSONFromHTML(doc, &singleJob)
+
+// 		p := singleJob.Props
+// 		jobInfoProps := p.PageProps
+
+// 		title := job.RoleTitle
+// 		jobOpening := jobInfoProps.JobOpening
+// 		description := strings.Join([]string{
+// 			jobOpening.RoleDescription,
+// 			jobOpening.RoleRequirements,
+// 			jobOpening.Benefits,
+// 		}, "\n")
+
+// 		location := job.Location
+// 		datePosted := job.CreatedAt
+
+// 		keyword := utils.FindKeywordInDescription(description)
+
+// 		record := models.ScrapedJob{
+// 			Title:           title,
+// 			Company:         company,
+// 			Location:        location,
+// 			URL:             job.URL,
+// 			DatePosted:      utils.FromTimestampToISOFormat(datePosted.UnixMilli()),
+// 			Modality:        "Remote",
+// 			Platform:        rrs.ScraperName,
+// 			KeywordAppeared: keyword,
+// 			LogoURL:         companyImageURL,
+// 		}
+// 		records = append(records, record)
+
+// 	}
+
+// 	return records
+// }
 
 func (rrs *RemoteRocketshipScraper) Scrape() []models.ScrapedJob {
 	resp, err := rrs.getJobsRequest()
@@ -146,35 +230,4 @@ func (rrs *RemoteRocketshipScraper) Scrape() []models.ScrapedJob {
 
 func normalizeString(s string) string {
 	return strings.ToLower(strings.TrimSpace(s))
-}
-func (rrs *RemoteRocketshipScraper) makeRequest(urlStr string, maxRetries int) (*client.Response, error) {
-	retries := 0
-	ctx := context.Background()
-	for retries < maxRetries {
-		rrs.Logger.Printf("Requesting %s with impersonate %s", urlStr, rrs.impersonate)
-		resp, err := rrs.Session.Get(ctx, urlStr, nil)
-		if err != nil {
-			wait := time.Duration(rand.Intn(5)+1) * time.Second
-			rrs.Logger.Printf("Request failed (%v), retrying in %s...", err, wait)
-			time.Sleep(wait)
-			retries++
-			rrs.impersonate = utils.RandomImpersonation()
-			rrs.Session = client.NewClient(rrs.impersonate)
-			continue
-		}
-		if resp.StatusCode == 429 {
-			wait := time.Duration(rand.Intn(5)+1) * time.Second
-			rrs.Logger.Printf("Rate limited. Generating new profile, waiting %s seconds...", wait)
-			time.Sleep(wait)
-			retries++
-			rrs.impersonate = utils.RandomImpersonation()
-			rrs.Session = client.NewClient(rrs.impersonate)
-			continue
-		}
-
-		return resp, nil
-	}
-
-	rrs.Logger.Printf("Failed to fetch %s after %d retries.", urlStr, maxRetries)
-	return nil, fmt.Errorf("max retries exceeded for %s", urlStr)
 }

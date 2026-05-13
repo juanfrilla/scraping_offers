@@ -29,8 +29,8 @@ jobs:
 
       - name: Build Go scraper for Linux
         run: |
-          GOOS=linux GOARCH=amd64 go build -o ./go/scraper_go ./go/main.go
-          chmod +x ./go/scraper_go
+          GOOS=linux GOARCH=amd64 go build -o ./go/bin/scraper_go ./go/main.go
+          chmod +x ./go/bin/scraper_go
 
       # -------------------------
       # PYTHON VALIDATION
@@ -57,7 +57,7 @@ jobs:
           git config --local user.name "github-actions[bot]"
 
           # Si scraper_go está en .gitignore, usa -f
-          git add -f ./go/scraper_go
+          git add -f ./go/bin/scraper_go
 
           # Detectar si hay cambios reales
           if git diff --staged --quiet; then

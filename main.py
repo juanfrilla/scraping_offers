@@ -22,7 +22,9 @@ def run_go_scraper() -> tuple[bool, str]:
     ENV = os.getenv("ENV", "prod")
     logger = get_logger("main")
 
-    command = ["go", "run", "./go/main.go"] if ENV == "local" else ["./go/scraper_go"]
+    command = (
+        ["go", "run", "./go/main.go"] if ENV == "local" else ["./go/bin/scraper_go"]
+    )
     logger.info(f"Executing {command}")
 
     try:

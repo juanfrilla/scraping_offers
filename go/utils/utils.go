@@ -157,3 +157,7 @@ func FromTimestampToISOFormat(tsMs int64) string {
 func RandomImpersonation() string {
 	return constants.ImpersonateList[rand.Intn(len(constants.ImpersonateList))]
 }
+
+func IsLocal() bool {
+	return os.Getenv("ENV") == "local"
+}
