@@ -41,7 +41,7 @@ jobs:
 
       - name: Validate Streamlit app imports
         run: |
-          python -m py_compile streamlit_app/main.py
+          python -m py_compile main.py
 
       # -------------------------
       # COMMIT BUILT BINARY (robusto)
