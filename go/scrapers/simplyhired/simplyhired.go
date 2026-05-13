@@ -5,13 +5,11 @@ import (
 	"fmt"
 	"io"
 	"log"
-	"math/rand"
 	"os"
 	"scraping_offers/go/constants"
 	"scraping_offers/go/models"
 	"scraping_offers/go/utils"
 	"strings"
-	"time"
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/sardanioss/httpcloak/client"
@@ -159,35 +157,4 @@ func (shs *SimplyHiredScraper) Scrape() []models.ScrapedJob {
 	}
 
 	return allJobs
-}
-func (shs *SimplyHiredScraper) makeRequest(urlStr string, maxRetries int) (*client.Response, error) {
-	retries := 0
-	ctx := context.Background()
-	for retries < maxRetries {
-		shs.Logger.Printf("Requesting %s with impersonate %s", urlStr, shs.impersonate)
-		resp, err := shs.Session.Get(ctx, urlStr, nil)
-		if err != nil {
-			wait := time.Duration(rand.Intn(5)+1) * time.Second
-			shs.Logger.Printf("Request failed (%v), retrying in %s...", err, wait)
-			time.Sleep(wait)
-			retries++
-			shs.impersonate = utils.RandomImpersonation()
-			shs.Session = client.NewClient(shs.impersonate)
-			continue
-		}
-		if resp.StatusCode == 429 {
-			wait := time.Duration(rand.Intn(5)+1) * time.Second
-			shs.Logger.Printf("Rate limited. Generating new profile, waiting %s seconds...", wait)
-			time.Sleep(wait)
-			retries++
-			shs.impersonate = utils.RandomImpersonation()
-			shs.Session = client.NewClient(shs.impersonate)
-			continue
-		}
-
-		return resp, nil
-	}
-
-	shs.Logger.Printf("Failed to fetch %s after %d retries.", urlStr, maxRetries)
-	return nil, fmt.Errorf("max retries exceeded for %s", urlStr)
 }

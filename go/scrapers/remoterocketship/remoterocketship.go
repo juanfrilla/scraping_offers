@@ -1,65 +1,52 @@
 package remoterocketship
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"log"
+	"math/rand"
 	"os"
 	"scraping_offers/go/constants"
 	"scraping_offers/go/models"
 	"scraping_offers/go/utils"
 	"strings"
+	"time"
 
 	"github.com/PuerkitoBio/goquery"
-	http "github.com/bogdanfinn/fhttp"
-	tls_client "github.com/bogdanfinn/tls-client"
-	"github.com/bogdanfinn/tls-client/profiles"
+	"github.com/sardanioss/httpcloak/client"
 )
 
 type RemoteRocketshipScraper struct {
-	Session     tls_client.HttpClient
-	Logger      *log.Logger
+	Session     *client.Client
 	ScraperName string
+	Logger      *log.Logger
+	impersonate string
 }
 
 func NewRemoteRocketshipScraper() *RemoteRocketshipScraper {
-	options := []tls_client.HttpClientOption{
-		tls_client.WithClientProfile(profiles.Chrome_146),
-		tls_client.WithInsecureSkipVerify(),
-	}
-
-	client, err := tls_client.NewHttpClient(tls_client.NewNoopLogger(), options...)
-	if err != nil {
-		log.Fatalf("Error creating client: %v", err)
-	}
-
-	scraperName := "RemoteRocketship"
+	impersonate := utils.RandomImpersonation()
+	c := client.NewClient(impersonate)
+	scraperName := "SimplyHired"
 	return &RemoteRocketshipScraper{
-		Session:     client,
+		Session:     c,
 		ScraperName: scraperName,
 		Logger:      log.New(os.Stdout, fmt.Sprintf("[%s] ", scraperName), log.LstdFlags),
+		impersonate: impersonate,
 	}
 }
 
-func (rrs *RemoteRocketshipScraper) getJobsRequest() (*http.Response, error) {
+func (rrs *RemoteRocketshipScraper) getJobsRequest() (*client.Response, error) {
+	ctx := context.Background()
 	url := "https://www.remoterocketship.com/?page=1&sort=DateAdded&jobTitle=scraping%2Ccrawling%2Cscraper%2Ccrawler%2Cdata+acquisition&locations=Europe%2CSpain"
 
-	req, err := http.NewRequest("GET", url, nil)
-	if err != nil {
-		return nil, err
-	}
-	return rrs.Session.Do(req)
+	return rrs.Session.Get(ctx, url, nil)
+
 }
 
-func (rrs *RemoteRocketshipScraper) jobInformationRequest(jobURL string) (*http.Response, error) {
-
-	req, err := http.NewRequest("GET", jobURL, nil)
-	if err != nil {
-		log.Fatal("Error creating request: %w", err)
-	}
-
-	req.Header.Set("referer", "https://www.remoterocketship.com/?page=1&sort=DateAdded&jobTitle=scraping%2Ccrawling%2Cscraper%2Ccrawler%2Cdata+acquisition&locations=Europe%2CSpain")
-	return rrs.Session.Do(req)
+func (rrs *RemoteRocketshipScraper) jobInformationRequest(jobURL string) (*client.Response, error) {
+	ctx := context.Background()
+	return rrs.Session.Get(ctx, jobURL, nil)
 
 }
 
@@ -159,4 +146,35 @@ func (rrs *RemoteRocketshipScraper) Scrape() []models.ScrapedJob {
 
 func normalizeString(s string) string {
 	return strings.ToLower(strings.TrimSpace(s))
+}
+func (rrs *RemoteRocketshipScraper) makeRequest(urlStr string, maxRetries int) (*client.Response, error) {
+	retries := 0
+	ctx := context.Background()
+	for retries < maxRetries {
+		rrs.Logger.Printf("Requesting %s with impersonate %s", urlStr, rrs.impersonate)
+		resp, err := rrs.Session.Get(ctx, urlStr, nil)
+		if err != nil {
+			wait := time.Duration(rand.Intn(5)+1) * time.Second
+			rrs.Logger.Printf("Request failed (%v), retrying in %s...", err, wait)
+			time.Sleep(wait)
+			retries++
+			rrs.impersonate = utils.RandomImpersonation()
+			rrs.Session = client.NewClient(rrs.impersonate)
+			continue
+		}
+		if resp.StatusCode == 429 {
+			wait := time.Duration(rand.Intn(5)+1) * time.Second
+			rrs.Logger.Printf("Rate limited. Generating new profile, waiting %s seconds...", wait)
+			time.Sleep(wait)
+			retries++
+			rrs.impersonate = utils.RandomImpersonation()
+			rrs.Session = client.NewClient(rrs.impersonate)
+			continue
+		}
+
+		return resp, nil
+	}
+
+	rrs.Logger.Printf("Failed to fetch %s after %d retries.", urlStr, maxRetries)
+	return nil, fmt.Errorf("max retries exceeded for %s", urlStr)
 }
