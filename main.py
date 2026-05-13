@@ -7,7 +7,7 @@ import streamlit as st
 from dateutil.parser import isoparse
 from dotenv import load_dotenv
 
-from constants import DATA_FILE, LOG_DIR
+from py.constants import DATA_FILE, LOG_DIR
 from py.logger import get_logger
 from py.utils import (
     last_scraped_today,

@@ -2,7 +2,7 @@ import logging
 import os
 from datetime import datetime
 
-from constants import LOG_DIR
+from py.constants import LOG_DIR
 
 
 def get_logger(name: str) -> logging.Logger:

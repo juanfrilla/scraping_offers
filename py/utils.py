@@ -2,7 +2,7 @@ import json
 import os
 from datetime import date
 
-from constants import LAST_SCRAPED_FILE
+from py.constants import LAST_SCRAPED_FILE
 
 
 def save_json(filename: str, data: dict):
