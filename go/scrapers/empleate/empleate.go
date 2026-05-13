@@ -5,9 +5,9 @@ import (
 	"io"
 	"log"
 	"os"
-	"scraping_offers/constants"
-	"scraping_offers/models"
-	"scraping_offers/utils"
+	"scraping_offers/go/constants"
+	"scraping_offers/go/models"
+	"scraping_offers/go/utils"
 
 	fhttp "github.com/bogdanfinn/fhttp"
 	tls_client "github.com/bogdanfinn/tls-client"

@@ -8,8 +8,8 @@ from dateutil.parser import isoparse
 from dotenv import load_dotenv
 
 from constants import DATA_FILE, LOG_DIR
-from logger import get_logger
-from utils import (
+from py.logger import get_logger
+from py.utils import (
     last_scraped_today,
     read_json,
     update_last_scraped,
@@ -39,7 +39,7 @@ def run_go_scraper() -> tuple[bool, str]:
         for line in process.stdout:
             line = line.rstrip()
             logs.append(line)
-            logger.info(f"[GO] {line}") 
+            logger.info(f"[GO] {line}")
 
         process.wait(timeout=120)
 
@@ -51,7 +51,7 @@ def run_go_scraper() -> tuple[bool, str]:
 
     except subprocess.TimeoutExpired:
         process.kill()
-        return False,
+        return (False,)
 
     except FileNotFoundError:
         return (

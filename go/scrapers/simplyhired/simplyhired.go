@@ -7,9 +7,9 @@ import (
 	"log"
 	"math/rand"
 	"os"
-	"scraping_offers/constants"
-	"scraping_offers/models"
-	"scraping_offers/utils"
+	"scraping_offers/go/constants"
+	"scraping_offers/go/models"
+	"scraping_offers/go/utils"
 	"strings"
 	"time"
 

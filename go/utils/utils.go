@@ -7,7 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
-	"scraping_offers/constants"
+	"scraping_offers/go/constants"
 	"strings"
 	"time"
 

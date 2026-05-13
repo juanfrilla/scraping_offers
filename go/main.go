@@ -4,14 +4,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"scraping_offers/constants"
-	"scraping_offers/models"
+	"scraping_offers/go/constants"
+	"scraping_offers/go/models"
 
-	"scraping_offers/scrapers/infojobs"
-	"scraping_offers/scrapers/linkedin"
-	"scraping_offers/scrapers/remoteok"
-	"scraping_offers/scrapers/remoterocketship"
-	"scraping_offers/scrapers/simplyhired"
+	"scraping_offers/go/scrapers/infojobs"
+	"scraping_offers/go/scrapers/linkedin"
+	"scraping_offers/go/scrapers/remoteok"
+	"scraping_offers/go/scrapers/remoterocketship"
+	"scraping_offers/go/scrapers/simplyhired"
 	"sync"
 )
 
