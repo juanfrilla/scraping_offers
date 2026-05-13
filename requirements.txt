@@ -1,5 +1,2 @@
 streamlit
-curl_cffi
-beautifulsoup4
-pydantic
 dotenv
