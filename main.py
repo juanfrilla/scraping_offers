@@ -19,11 +19,10 @@ load_dotenv()
 
 
 def run_go_scraper() -> tuple[bool, str]:
-    """Ejecuta el scraper Go en streaming. Devuelve (éxito, logs_completos)."""
     ENV = os.getenv("ENV", "local")
     logger = get_logger("main")
 
-    command = ["./scraper_go"] if ENV == "prod" else ["go", "run", "main.go"]
+    command = ["go", "run", "main.go"] if ENV == "local" else ["./scraper_go"]
     logger.info(f"Executing {command}")
 
     try:
@@ -57,7 +56,7 @@ def run_go_scraper() -> tuple[bool, str]:
     except FileNotFoundError:
         return (
             False,
-            "Binario './scraper_go' no encontrado. Compila con: go build -o scraper_go",
+            "Binary './scraper_go' not found.",
         )
 
 
