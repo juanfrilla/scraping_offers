@@ -43,7 +43,7 @@ func (shs *SimplyHiredScraper) getJobsRequest(keyword string) (*client.Response,
 
 	resp, err := shs.Session.Post(ctx, url, body, nil)
 	if err != nil {
-		return nil, fmt.Errorf("error en POST búsqueda: %w", err)
+		return nil, fmt.Errorf("error in search POST: %w", err)
 	}
 
 	return resp, nil
