@@ -1,6 +1,6 @@
 LOG_DIR = "logs"
-DATA_FILE = "jobs.json"
-LAST_SCRAPED_FILE = "last_scraped.json"
+DATA_FILE = "./data/jobs.json"
+LAST_SCRAPED_FILE = "./data/last_scraped.json"
 FORBIDDEN_KEYWORDS = [
     "account",
     "ai",

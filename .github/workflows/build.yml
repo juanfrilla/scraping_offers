@@ -1,0 +1,63 @@
+name: Build Go Scraper & Validate Python
+
+on:
+  push:
+    branches: ["main"]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # -------------------------
+      # GO BUILD
+      # -------------------------
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.22"
+
+      - name: Install Go dependencies
+        run: go mod tidy
+
+      - name: Build Go scraper for Linux
+        run: |
+          GOOS=linux GOARCH=amd64 go build -o scraper_go main.go
+
+      # -------------------------
+      # PYTHON VALIDATION
+      # -------------------------
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Python dependencies
+        run: |
+          pip install -r requirements.txt
+
+      - name: Validate Streamlit app imports
+        run: |
+          python -m py_compile streamlit_app/main.py
+
+      # -------------------------
+      # COMMIT BUILT BINARY (robusto)
+      # -------------------------
+      - name: Commit built scraper_go
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+
+          # Si scraper_go está en .gitignore, usa -f
+          git add -f scraper_go
+
+          # Detectar si hay cambios reales
+          if git diff --staged --quiet; then
+            echo "No changes detected in scraper_go."
+          else
+            git commit -m "CI: update scraper_go binary [skip ci]"
+            git push origin main
+          fi
