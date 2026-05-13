@@ -25,7 +25,7 @@ type RemoteRocketshipScraper struct {
 func NewRemoteRocketshipScraper() *RemoteRocketshipScraper {
 	impersonate := utils.RandomImpersonation()
 	c := client.NewClient(impersonate)
-	scraperName := "SimplyHired"
+	scraperName := "RemoteRocketship"
 	return &RemoteRocketshipScraper{
 		Session:     c,
 		ScraperName: scraperName,
@@ -112,7 +112,7 @@ func (rrs *RemoteRocketshipScraper) parse(responseJSON *RemoteRockJobList) []mod
 		datePosted := job.CreatedAt
 		var keyword string
 		if utils.IsLocal() {
-			
+
 			keyword = utils.FindKeywordInDescription(description)
 		} else {
 			keyword = ""
