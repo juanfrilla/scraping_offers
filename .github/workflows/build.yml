@@ -29,8 +29,8 @@ jobs:
 
       - name: Build Go scraper for Linux
         run: |
-          GOOS=linux GOARCH=amd64 go build -o scraper_go main.go
-          chmod +x scraper_go
+          GOOS=linux GOARCH=amd64 go build -o ./go/scraper_go ./go/main.go
+          chmod +x ./go/scraper_go
 
       # -------------------------
       # PYTHON VALIDATION
