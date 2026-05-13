@@ -40,7 +40,6 @@ var ForbiddenKeywords = []string{
 	"veterinarian",
 }
 
-// SearchKeywords - Terms used to query the Empleate API.
 var SearchKeywords = []string{
 	"scraping",
 	"crawling",
@@ -51,20 +50,19 @@ var SearchKeywords = []string{
 	"antibot",
 }
 
-// ForbiddenCompanies - Companies whose job postings should be filtered out.
 var ForbiddenCompanies = []string{
-	"infatica.io",
-	"corsearch",
-	"mindrift",
-	"wayops",
-	"duckduckgo",
-	"fundraise up",
+	// "infatica.io",
+	// "corsearch",
+	// "mindrift",
+	// "wayops",
+	// "duckduckgo",
+	// "fundraise up",
+	//"searchapi",
 }
 
-var JsonTypes = []string{"application/json", "application/ld+json"} // constants
+var JsonTypes = []string{"application/json", "application/ld+json"}
 
 var ImpersonateList = []string{
-	// Chrome Desktop
 	"chrome-133",
 	"chrome-141",
 	"chrome-143",
@@ -74,7 +72,6 @@ var ImpersonateList = []string{
 	"chrome-147",
 	"chrome-148",
 
-	// Chrome per-OS
 	"chrome-133-windows",
 	"chrome-133-linux",
 	"chrome-133-macos",
@@ -87,7 +84,6 @@ var ImpersonateList = []string{
 	"chrome-146-android",
 	"chrome-146-ios",
 
-	// Chrome latest aliases
 	"chrome-latest",
 	"chrome-latest-windows",
 	"chrome-latest-linux",
@@ -95,16 +91,6 @@ var ImpersonateList = []string{
 	"chrome-latest-android",
 	"chrome-latest-ios",
 
-	// Firefox
 	"firefox-133",
 	"firefox-148",
-
-	// // Safari Desktop
-	// "safari-18",
-	// "safari-17",
-	// "safari-16",
-
-	// // Safari iOS
-	// "safari-17-ios",
-	// "safari-18-ios",
 }
