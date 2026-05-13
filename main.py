@@ -21,7 +21,7 @@ load_dotenv()
 def run_go_scraper() -> tuple[bool, str]:
     ENV = os.getenv("ENV", "prod")
     logger = get_logger("main")
-
+    env = os.environ.copy()
     command = (
         ["go", "run", "./go/main.go"] if ENV == "local" else ["./go/bin/scraper_go"]
     )
@@ -34,6 +34,7 @@ def run_go_scraper() -> tuple[bool, str]:
             stderr=subprocess.PIPE,
             text=True,
             bufsize=1,
+            env=env,
         )
 
         logs = []
