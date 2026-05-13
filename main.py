@@ -1,6 +1,6 @@
 import os
+import subprocess
 import threading
-from concurrent.futures import ThreadPoolExecutor
 from datetime import date, datetime, timezone
 
 import streamlit as st
@@ -9,59 +9,56 @@ from dotenv import load_dotenv
 
 from constants import DATA_FILE, LOG_DIR
 from logger import get_logger
-from scrapers.empleate import EmpleateScraper
-from scrapers.infojobs import InfoJobsScraper
-from scrapers.linkedin import LinkedinScraper
-from scrapers.remoteok import RemoteOKScraper
-from scrapers.remoterocketship import RemoteRocketshipScraper
-from scrapers.simplyhired import SimplyHiredScraper
 from utils import (
     last_scraped_today,
     read_json,
-    save_json,
     update_last_scraped,
 )
 
 load_dotenv()
 
 
-def run_single_scraper(ScraperClass):
-    """Función auxiliar para ejecutar un solo scraper"""
-    scraper = ScraperClass()
-    scraper_name = scraper.scraper_name
-    logger = get_logger(scraper_name)
+def run_go_scraper() -> tuple[bool, str]:
+    """Ejecuta el scraper Go en streaming. Devuelve (éxito, logs_completos)."""
+    ENV = os.getenv("ENV", "local")
+    logger = get_logger("main")
+
+    command = ["./scraper_go"] if ENV == "prod" else ["go", "run", "main.go"]
+    logger.info(f"Executing {command}")
 
     try:
-        logger.info(f"Starting scraping {scraper_name}")
-        jobs = scraper.scrape()
-        logger.info(f"Retrieved {len(jobs)} for {scraper_name}")
-        return jobs
-    except Exception as e:
-        logger.error(f"Error in {scraper_name}: {str(e)}")
-        return []
+        process = subprocess.Popen(
+            command,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            bufsize=1,
+        )
 
+        logs = []
 
-def scrape_everything_parallel():
-    ENV = os.getenv("ENV", "server")
-    in_server = ENV == "server"
+        for line in process.stdout:
+            line = line.rstrip()
+            logs.append(line)
+            logger.info(f"[GO] {line}") 
 
-    scrapers = [
-        RemoteOKScraper,
-        RemoteRocketshipScraper,
-        LinkedinScraper,
-        InfoJobsScraper,
-        EmpleateScraper,
-    ]
-    if not in_server:
-        scrapers += [SimplyHiredScraper]
+        process.wait(timeout=120)
 
-    job_posts = []
-    with ThreadPoolExecutor(max_workers=len(scrapers)) as executor:
-        results = list(executor.map(run_single_scraper, scrapers))
-    for jobs in results:
-        job_posts += jobs
+        if process.returncode != 0:
+            err = process.stderr.read()
+            return False, err or "\n".join(logs)
 
-    return job_posts
+        return True, "\n".join(logs)
+
+    except subprocess.TimeoutExpired:
+        process.kill()
+        return False,
+
+    except FileNotFoundError:
+        return (
+            False,
+            "Binario './scraper_go' no encontrado. Compila con: go build -o scraper_go",
+        )
 
 
 @st.cache_resource
@@ -70,20 +67,25 @@ def get_scraper_lock():
 
 
 @st.cache_data(ttl=86400, show_spinner=False)
-def get_jobs_data():
-    lock = get_scraper_lock()
-    with lock:
-        if last_scraped_today() and os.path.exists(DATA_FILE):
-            return read_json(DATA_FILE)
-        jobs = scrape_everything_parallel()
-        save_json(DATA_FILE, jobs)
+def get_jobs_data() -> list:
+    """Obtiene los jobs: del caché JSON o ejecutando el scraper de Go."""
+    if last_scraped_today() and os.path.exists(DATA_FILE):
+        return read_json(DATA_FILE)
+    success, message = run_go_scraper()
+
+    if success:
         update_last_scraped()
-        return jobs
+        return read_json(DATA_FILE)
+    else:
+        st.error(f"Error en el scraper: {message}")
+        if os.path.exists(DATA_FILE):
+            st.warning("Usando datos del último scraping disponible.")
+            return read_json(DATA_FILE)
+        return []
 
 
 with st.spinner("Scraping jobs..."):
     os.makedirs(LOG_DIR, exist_ok=True)
-    logger = get_logger("main")
     jobs = get_jobs_data()
 
     st.sidebar.header("Filters")

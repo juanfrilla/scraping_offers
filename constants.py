@@ -1,6 +1,6 @@
 LOG_DIR = "logs"
-DATA_FILE = "jobs.json"
-LAST_SCRAPED_FILE = "last_scraped.json"
+DATA_FILE = "./data/jobs.json"
+LAST_SCRAPED_FILE = "./data/last_scraped.json"
 FORBIDDEN_KEYWORDS = [
     "account",
     "ai",
@@ -9,7 +9,6 @@ FORBIDDEN_KEYWORDS = [
     "brand",
     "business development",
     "business intelligence",
-    "content",
     "deal",
     "director",
     "editor",
@@ -44,6 +43,8 @@ SEARCH_KEYWORDS = [
     "data%20aquisition",
     "scraper",
     "crawler",
+    "anti-bot",
+    "antibot",
 ]
 FORBIDDEN_COMPANIES = [
     "infatica.io",
@@ -51,4 +52,6 @@ FORBIDDEN_COMPANIES = [
     "mindrift",
     "wayops",
     "duckduckgo",
+    "firstsource",
+    "searchapi",
 ]
