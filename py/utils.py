@@ -42,16 +42,3 @@ def update_last_scraped() -> None:
 
 def normalize_string(s: str) -> str:
     return s.title().strip()
-
-
-def filter_jobs(jobs: list) -> list:
-    urls = set()
-    filtered_jobs = []
-    for job in jobs:
-        url = job.get("url")
-        if url not in urls:
-            urls.add(url)
-            filtered_jobs.append(job)
-        else:
-            continue
-    return filtered_jobs
