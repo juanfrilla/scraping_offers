@@ -57,7 +57,7 @@ jobs:
           git config --local user.name "github-actions[bot]"
 
           # Si scraper_go está en .gitignore, usa -f
-          git add -f scraper_go
+          git add -f ./go/scraper_go
 
           # Detectar si hay cambios reales
           if git diff --staged --quiet; then
