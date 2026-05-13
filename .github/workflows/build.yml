@@ -1,5 +1,7 @@
 name: Build Go Scraper & Validate Python
-
+permissions:
+  contents: write
+  
 on:
   push:
     branches: ["main"]
@@ -11,6 +13,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          persist-credentials: true
 
       # -------------------------
       # GO BUILD
