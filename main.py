@@ -19,7 +19,7 @@ load_dotenv()
 
 
 def run_go_scraper() -> tuple[bool, str]:
-    ENV = os.getenv("ENV", "local")
+    ENV = os.getenv("ENV", "prod")
     logger = get_logger("main")
 
     command = ["go", "run", "main.go"] if ENV == "local" else ["./scraper_go"]
