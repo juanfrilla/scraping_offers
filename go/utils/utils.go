@@ -161,3 +161,9 @@ func RandomImpersonation() string {
 func IsLocal() bool {
 	return os.Getenv("ENV") == "local"
 }
+
+func SaveDebugHTML(prefix, id, html string) {
+	timestamp := time.Now().Format("2006-01-02_15-04-05")
+	filename := fmt.Sprintf("%s/%s_%s_%s.html", "debug", prefix, timestamp, id)
+	os.WriteFile(filename, []byte(html), 0644)
+}

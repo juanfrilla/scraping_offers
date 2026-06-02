@@ -31,6 +31,10 @@ func NewInfojobsScraper() *InfojobsScraper {
 	}
 }
 
+func (ijs *InfojobsScraper) Name() string {
+	return ijs.ScraperName
+}
+
 func (ijs *InfojobsScraper) InfojobsJobSearchRequest(keyword string) (*client.Response, error) {
 	ctx := context.Background()
 	ijs.Logger.Printf("Using %s", ijs.impersonate)
@@ -56,7 +60,7 @@ func (ijs *InfojobsScraper) InfojobsJobSearchRequest(keyword string) (*client.Re
 	return resp, nil
 }
 
-func (ijs *InfojobsScraper) Scrape() []models.ScrapedJob {
+func (ijs *InfojobsScraper) Scrape() ([]models.ScrapedJob, error) {
 	var records []models.ScrapedJob
 	var rawData Root
 
@@ -80,8 +84,7 @@ func (ijs *InfojobsScraper) Scrape() []models.ScrapedJob {
 		utils.GetJSONFromHTML(doc, &rawData)
 
 		if err != nil {
-			ijs.Logger.Printf("error parsing HTML: %w", err)
-			continue
+			return nil, fmt.Errorf("error parsing HTML: %w", err)
 		}
 
 		ijs.Logger.Printf("Successfully scraped %s", kw)
@@ -108,5 +111,5 @@ func (ijs *InfojobsScraper) Scrape() []models.ScrapedJob {
 		}
 	}
 
-	return records
+	return records, nil
 }

@@ -42,19 +42,22 @@ func NewLinkedinScraper() *LinkedinScraper {
 	}
 }
 
-func (ls *LinkedinScraper) Scrape() []models.ScrapedJob {
+func (ls *LinkedinScraper) Name() string {
+	return ls.ScraperName
+}
+
+func (ls *LinkedinScraper) Scrape() ([]models.ScrapedJob, error) {
 	urls, err := ls.retrieveOffers()
 	if err != nil {
-		log.Fatal(err)
+		return nil, fmt.Errorf("Error retrieving offers")
 	}
 
 	jobs, err := ls.parse(urls)
 	if err != nil {
-
-		ls.Logger.Printf("Error parsing urls", err)
+		return nil, fmt.Errorf("Error parsing urls", err)
 
 	}
-	return jobs
+	return jobs, nil
 }
 
 func (ls *LinkedinScraper) retrieveOffers() ([]string, error) {
@@ -81,17 +84,15 @@ func (ls *LinkedinScraper) retrieveOffers() ([]string, error) {
 			)
 			resp, err := ls.makeRequest(jobSearchURL, 5)
 			if err != nil {
-				ls.Logger.Printf("Error getJobsRequest para %s: %v", keyword, err)
-				continue
+				return nil, fmt.Errorf("Error getJobsRequest para %s: %v", keyword, err)
 			}
 			bodyBytes, err := io.ReadAll(resp.Body)
 			defer resp.Body.Close()
 
 			doc, err := goquery.NewDocumentFromReader(strings.NewReader(string(bodyBytes)))
 			if err != nil {
-				continue // USA CONTINUE, NO BREAK
+				return nil, fmt.Errorf("Error reading bodyBytes")
 			}
-
 			// html, err := doc.Html()
 
 			// htmlFilename := fmt.Sprintf("debug_%s.html", keyword)
@@ -103,8 +104,7 @@ func (ls *LinkedinScraper) retrieveOffers() ([]string, error) {
 				continue // USA CONTINUE, NO BREAK
 			}
 			if err != nil {
-				ls.Logger.Printf("Error parsing HTML para %s: %v", keyword, err)
-				continue
+				return nil, fmt.Errorf("Error parsing HTML para %s: %v", keyword, err)
 			}
 			jobList.Each(func(_ int, s *goquery.Selection) {
 				linkTag := s.Find("a").First()
@@ -197,7 +197,7 @@ func (ls *LinkedinScraper) parse(urls []string) ([]models.ScrapedJob, error) {
 		bodyBytes, err := io.ReadAll(resp.Body)
 		doc, err := goquery.NewDocumentFromReader(strings.NewReader(string(bodyBytes)))
 		if err != nil {
-			continue
+			return nil, fmt.Errorf("Error reading bodyBytes")
 		}
 
 		// html, err := doc.Html()

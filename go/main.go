@@ -6,20 +6,23 @@ import (
 	"os"
 	"scraping_offers/go/constants"
 	"scraping_offers/go/models"
-
 	"scraping_offers/go/scrapers/infojobs"
 	"scraping_offers/go/scrapers/linkedin"
 	"scraping_offers/go/scrapers/remoteok"
 	"scraping_offers/go/scrapers/remoterocketship"
 	"scraping_offers/go/scrapers/simplyhired"
+
 	"sync"
 )
 
 type Scraper interface {
-	Scrape() []models.ScrapedJob
+	Name() string
+	Scrape() ([]models.ScrapedJob, error)
 }
 
 func main() {
+	os.MkdirAll("data", 0755)
+	os.MkdirAll("debug", 0755)
 	scrapers := []Scraper{
 		linkedin.NewLinkedinScraper(),
 		infojobs.NewInfojobsScraper(),
@@ -35,7 +38,13 @@ func main() {
 		wg.Add(1)
 		go func(s Scraper) {
 			defer wg.Done()
-			data := s.Scrape()
+
+			data, err := s.Scrape()
+			if err != nil {
+				errorsChan <- fmt.Errorf("%s: %w", s.Name(), err)
+				return
+			}
+
 			resultsChan <- data
 		}(scraper)
 	}
@@ -54,8 +63,6 @@ func main() {
 	for err := range errorsChan {
 		fmt.Println("❌ Error in scraper:", err)
 	}
-
-	os.MkdirAll("data", 0755)
 
 	file, err := os.Create(constants.DataFile)
 	if err != nil {

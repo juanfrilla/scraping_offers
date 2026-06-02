@@ -32,7 +32,7 @@ func NewRemoteOKScraper() *RemoteOKScraper {
 
 	client, err := tls_client.NewHttpClient(tls_client.NewNoopLogger(), options...)
 	if err != nil {
-		log.Fatalf("Error creating client: %v", err)
+		panic(fmt.Errorf("Error creating client: %v", err))
 	}
 	scraperName := "RemoteOK"
 	return &RemoteOKScraper{
@@ -40,6 +40,10 @@ func NewRemoteOKScraper() *RemoteOKScraper {
 		ScraperName: scraperName,
 		Logger:      log.New(os.Stdout, fmt.Sprintf("[%s] ", scraperName), log.LstdFlags),
 	}
+}
+
+func (ro *RemoteOKScraper) Name() string {
+	return ro.ScraperName
 }
 
 func (ro *RemoteOKScraper) getJobsRequest(keyword string) (*http.Response, error) {
@@ -54,7 +58,7 @@ func (ro *RemoteOKScraper) getJobsRequest(keyword string) (*http.Response, error
 	return ro.Session.Do(req)
 }
 
-func (ro *RemoteOKScraper) parse(doc *goquery.Document) []models.ScrapedJob {
+func (ro *RemoteOKScraper) parse(doc *goquery.Document) ([]models.ScrapedJob, error) {
 	expandText := make(map[string]string)
 	doc.Find("tr.expand").Each(func(_ int, row *goquery.Selection) {
 		class, _ := row.Attr("class")
@@ -66,25 +70,43 @@ func (ro *RemoteOKScraper) parse(doc *goquery.Document) []models.ScrapedJob {
 		}
 	})
 
-	var singleJob RemoteOkJob
 	var records []models.ScrapedJob
+	var parseErr error
+
 	jobs := doc.Find("tr.job")
 	total := jobs.Length()
 
-	jobs.Each(func(i int, job *goquery.Selection) {
+	jobs.EachWithBreak(func(i int, job *goquery.Selection) bool {
+		var singleJob RemoteOkJob
+
 		dataID, _ := job.Attr("data-id")
 		botURL, _ := job.Attr("data-url")
 		ro.Logger.Printf("Parsing job posting %d/%d", i+1, total)
 
-		err := utils.GetJSONFromHTML(job, &singleJob)
+		html, _ := job.Html()
+
+		fixedHTML := strings.ReplaceAll(html, "}{", "},{")
+
+
+		fixedDoc, err := goquery.NewDocumentFromReader(strings.NewReader(fixedHTML))
 		if err != nil {
-			log.Fatal(err)
+			ro.Logger.Printf("Error creating fixed goquery doc: %v", err)
+			parseErr = err
+			return false
+		}
+
+		err = utils.GetJSONFromHTML(fixedDoc.Selection, &singleJob)
+		if err != nil {
+			ro.Logger.Printf("Error parsing JSON after fix: %v", err)
+			parseErr = err
+			return false
 		}
 
 		title := singleJob.Title
 		if title == "" {
 			title = "N/A"
 		}
+
 		company := singleJob.HiringOrg.Name
 		datePosted := singleJob.DatePosted
 		modality := "REMOTE"
@@ -97,8 +119,12 @@ func (ro *RemoteOKScraper) parse(doc *goquery.Document) []models.ScrapedJob {
 
 		description := expandText[dataID]
 		keyword := utils.FindKeywordInDescription(description)
-		if keyword != "" && !utils.IsForbidden(company, constants.ForbiddenCompanies) && !utils.IsForbidden(title, constants.ForbiddenKeywords) {
-			record := models.ScrapedJob{
+
+		if keyword != "" &&
+			!utils.IsForbidden(company, constants.ForbiddenCompanies) &&
+			!utils.IsForbidden(title, constants.ForbiddenKeywords) {
+
+			records = append(records, models.ScrapedJob{
 				Title:           title,
 				Company:         utils.NormalizeString(company),
 				Location:        location,
@@ -108,15 +134,20 @@ func (ro *RemoteOKScraper) parse(doc *goquery.Document) []models.ScrapedJob {
 				Platform:        ro.ScraperName,
 				KeywordAppeared: keyword,
 				LogoURL:         singleJob.Image,
-			}
-			records = append(records, record)
+			})
 		}
+
+		return true
 	})
 
-	return records
+	if parseErr != nil {
+		return nil, parseErr
+	}
+
+	return records, nil
 }
 
-func (s *RemoteOKScraper) Scrape() []models.ScrapedJob {
+func (s *RemoteOKScraper) Scrape() ([]models.ScrapedJob, error) {
 	var allJobs []models.ScrapedJob
 
 	for _, keyword := range searchKeywords {
@@ -124,27 +155,28 @@ func (s *RemoteOKScraper) Scrape() []models.ScrapedJob {
 
 		resp, err := s.getJobsRequest(keyword)
 		if err != nil {
-			s.Logger.Printf("Request error for %s: %v", keyword, err)
-			continue
+			return nil, fmt.Errorf("Request error for %s: %v", keyword, err)
 		}
 
 		bodyBytes, err := io.ReadAll(resp.Body)
 		resp.Body.Close()
 		if err != nil {
-			s.Logger.Printf("Read error for %s: %v", keyword, err)
-			continue
+			return nil, fmt.Errorf("Read error for %s: %v", keyword, err)
 		}
 		wrapped := "<table>" + strings.ReplaceAll(string(bodyBytes), "\t", " ") + "</table>"
 
 		doc, err := goquery.NewDocumentFromReader(strings.NewReader(wrapped))
 		if err != nil {
-			s.Logger.Printf("Parse error for %s: %v", keyword, err)
-			continue
+			return nil, fmt.Errorf("Error on document from reader %s: %v", keyword, err)
 		}
 
-		jobs := s.parse(doc)
+		jobs, err := s.parse(doc)
+		if err != nil {
+			return nil, fmt.Errorf("Parse error for %s: %v", keyword, err)
+		}
+
 		s.Logger.Printf("Retrieved %d jobs for %s", len(jobs), keyword)
 		allJobs = append(allJobs, jobs...)
 	}
-	return allJobs
+	return allJobs, nil
 }

@@ -33,6 +33,9 @@ func NewSimplyHiredScraper() *SimplyHiredScraper {
 		impersonate: impersonate,
 	}
 }
+func (shs *SimplyHiredScraper) Name() string {
+	return shs.ScraperName
+}
 
 func (shs *SimplyHiredScraper) getJobsRequest(keyword string) (*client.Response, error) {
 	ctx := context.Background()
@@ -128,26 +131,23 @@ func (shs *SimplyHiredScraper) Parse(jobsData SimplyHiredJobList, seenURLs map[s
 	return records
 }
 
-func (shs *SimplyHiredScraper) Scrape() []models.ScrapedJob {
+func (shs *SimplyHiredScraper) Scrape() ([]models.ScrapedJob, error) {
 	var allJobs []models.ScrapedJob
 	seenURLs := make(map[string]bool)
 	for _, kw := range constants.SearchKeywords {
 		shs.Logger.Printf("Scraping word: %s", kw)
 		resp, err := shs.getJobsRequest(kw)
 		if err != nil {
-			shs.Logger.Printf("Error getJobsRequest para %s: %v", kw, err)
-			continue
+			return nil, fmt.Errorf("Error getJobsRequest para %s: %v", kw, err)
 		}
 		doc, err := goquery.NewDocumentFromReader(resp.Body)
 		resp.Body.Close()
 		if err != nil {
-			shs.Logger.Printf("Error parsing HTML para %s: %v", kw, err)
-			continue
+			return nil, fmt.Errorf("Error parsing HTML para %s: %v", kw, err)
 		}
 		var rJSON SimplyHiredJobList
 		if err := utils.GetJSONFromHTML(doc, &rJSON); err != nil {
-			shs.Logger.Printf("Error GettingJSONFromHTML para %s: %v", kw, err)
-			continue
+			return nil, fmt.Errorf("Error GettingJSONFromHTML para %s: %v", kw, err)
 		}
 		if len(rJSON.Props.PageProps.Jobs) > 0 {
 			jobs := shs.Parse(rJSON, seenURLs)
@@ -156,5 +156,5 @@ func (shs *SimplyHiredScraper) Scrape() []models.ScrapedJob {
 		}
 	}
 
-	return allJobs
+	return allJobs, nil
 }

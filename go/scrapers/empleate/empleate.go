@@ -86,7 +86,7 @@ func (es *EmpleateScraper) Parse(jsonData EmpleateJobList) []models.ScrapedJob {
 	return records
 }
 
-func (es *EmpleateScraper) Scrape() []models.ScrapedJob {
+func (es *EmpleateScraper) Scrape() ([]models.ScrapedJob, error) {
 	//TODO aqui poner los nils devolverlos
 	var allJobs []models.ScrapedJob
 
@@ -94,15 +94,13 @@ func (es *EmpleateScraper) Scrape() []models.ScrapedJob {
 		es.Logger.Printf("Scraping word: %s", keyword)
 		resp, err := es.EmpleateJobSearchRequest(keyword)
 		if err != nil {
-			es.Logger.Printf("Error requesting keyword %s: %v", keyword, err)
-			continue
+			return nil, fmt.Errorf("Error requesting keyword %s: %w", keyword, err)
 		}
 
 		defer resp.Body.Close()
 		content, err := io.ReadAll(resp.Body)
 		if err != nil {
-			es.Logger.Printf("Error reading body: %v", err)
-			continue
+			return nil, fmt.Errorf("Error reading body: %v", err)
 		}
 		var JobSearchJson EmpleateJobList
 		utils.DecodeJSONP(content, &JobSearchJson)
@@ -111,7 +109,7 @@ func (es *EmpleateScraper) Scrape() []models.ScrapedJob {
 		allJobs = append(allJobs, jobs...)
 	}
 
-	return allJobs
+	return allJobs, nil
 }
 
 func getString(m map[string]interface{}, key string, defaultValue string) string {
