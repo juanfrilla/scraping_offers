@@ -38,29 +38,42 @@ def run_go_scraper() -> tuple[bool, str]:
         )
 
         logs = []
+        err_logs = []
 
-        for line in process.stdout:
-            line = line.rstrip()
-            logs.append(line)
-            logger.info(f"[GO] {line}")
+        def read_stdout():
+            for line in process.stdout:
+                line = line.rstrip()
+                logs.append(line)
+                logger.info(f"[GO] {line}")
+
+        def read_stderr():
+            for line in process.stderr:
+                line = line.rstrip()
+                err_logs.append(line)
+                logger.error(f"[GO-ERR] {line}")
+
+        t1 = threading.Thread(target=read_stdout)
+        t2 = threading.Thread(target=read_stderr)
+
+        t1.start()
+        t2.start()
 
         process.wait(timeout=120)
 
+        t1.join()
+        t2.join()
+
         if process.returncode != 0:
-            err = process.stderr.read()
-            return False, err or "\n".join(logs)
+            return False, "\n".join(err_logs) or "\n".join(logs)
 
         return True, "\n".join(logs)
 
     except subprocess.TimeoutExpired:
         process.kill()
-        return (False,)
+        return False, "Timeout: scraper tardó más de 120s."
 
     except FileNotFoundError:
-        return (
-            False,
-            "Binary './scraper_go' not found.",
-        )
+        return False, "Binary './scraper_go' not found."
 
 
 @st.cache_resource
