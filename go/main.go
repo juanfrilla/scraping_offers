@@ -9,7 +9,6 @@ import (
 	"scraping_offers/go/scrapers/infojobs"
 	"scraping_offers/go/scrapers/linkedin"
 	"scraping_offers/go/scrapers/remoteok"
-	"scraping_offers/go/scrapers/remoterocketship"
 
 	"sync"
 )
@@ -27,7 +26,7 @@ func main() {
 		infojobs.NewInfojobsScraper(),
 		//simplyhired.NewSimplyHiredScraper(),
 		remoteok.NewRemoteOKScraper(),
-		remoterocketship.NewRemoteRocketshipScraper(),
+		//remoterocketship.NewRemoteRocketshipScraper(),
 	}
 
 	resultsChan := make(chan []models.ScrapedJob)
