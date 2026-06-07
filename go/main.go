@@ -10,6 +10,8 @@ import (
 	"scraping_offers/go/scrapers/linkedin"
 	"scraping_offers/go/scrapers/remoteok"
 	"scraping_offers/go/scrapers/remoterocketship"
+	"scraping_offers/go/scrapers/simplyhired"
+	"scraping_offers/go/utils"
 
 	"sync"
 )
@@ -25,9 +27,12 @@ func main() {
 	scrapers := []Scraper{
 		linkedin.NewLinkedinScraper(),
 		infojobs.NewInfojobsScraper(),
-		//simplyhired.NewSimplyHiredScraper(),
 		remoteok.NewRemoteOKScraper(),
 		remoterocketship.NewRemoteRocketshipScraper(),
+	}
+
+	if utils.IsLocal() {
+		scrapers = append(scrapers, simplyhired.NewSimplyHiredScraper())
 	}
 
 	resultsChan := make(chan []models.ScrapedJob)
