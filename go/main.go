@@ -6,6 +6,7 @@ import (
 	"os"
 	"scraping_offers/go/constants"
 	"scraping_offers/go/models"
+	"scraping_offers/go/scrapers/empleate"
 	"scraping_offers/go/scrapers/infojobs"
 	"scraping_offers/go/scrapers/linkedin"
 	"scraping_offers/go/scrapers/remoteok"
@@ -29,6 +30,7 @@ func main() {
 		infojobs.NewInfojobsScraper(),
 		remoteok.NewRemoteOKScraper(),
 		remoterocketship.NewRemoteRocketshipScraper(),
+		empleate.NewEmpleateScraper(),
 	}
 
 	if utils.IsLocal() {

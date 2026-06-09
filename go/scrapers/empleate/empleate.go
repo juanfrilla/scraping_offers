@@ -20,6 +20,10 @@ type EmpleateScraper struct {
 	Logger      *log.Logger
 }
 
+func (em *EmpleateScraper) Name() string {
+	return em.ScraperName
+}
+
 func NewEmpleateScraper() *EmpleateScraper {
 
 	options := []tls_client.HttpClientOption{
