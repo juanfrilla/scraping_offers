@@ -44,12 +44,17 @@ func main() {
 		wg.Add(1)
 		go func(s Scraper) {
 			defer wg.Done()
+			fmt.Println("Starting Scraping", s.Name())
 
 			data, err := s.Scrape()
+
 			if err != nil {
+				fmt.Println("❌ Scraping failed", s.Name(), err)
 				errorsChan <- fmt.Errorf("%s: %w", s.Name(), err)
 				return
 			}
+
+			fmt.Println("Finished Scraping", s.Name())
 
 			resultsChan <- data
 		}(scraper)
