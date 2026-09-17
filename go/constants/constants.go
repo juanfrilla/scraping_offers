@@ -26,6 +26,7 @@ var ForbiddenKeywords = []string{
 	"lead",
 	"manager",
 	"marketing",
+	"machine learning",
 	"operation",
 	"principal",
 	"product",
