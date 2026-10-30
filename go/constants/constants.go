@@ -5,7 +5,7 @@ const DataFile = "./data/jobs.json"
 var ForbiddenKeywords = []string{
 	"account",
 	"ai",
-	"analyst",
+	//"analyst",
 	"artificial intelligence",
 	"bi",
 	"brand",
@@ -54,6 +54,8 @@ var SearchKeywords = []string{
 	"crawler",
 	"anti-bot",
 	"antibot",
+	"anti%20bot",
+	"data%20extraction",
 }
 
 var ForbiddenCompanies = []string{
