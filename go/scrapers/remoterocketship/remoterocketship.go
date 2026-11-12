@@ -38,7 +38,8 @@ func (rrs *RemoteRocketshipScraper) Name() string {
 }
 func (rrs *RemoteRocketshipScraper) getJobsRequest() (*client.Response, error) {
 	ctx := context.Background()
-	url := "https://www.remoterocketship.com/?page=1&sort=DateAdded&jobTitle=scraping%2Ccrawling%2Cscraper%2Ccrawler%2Cdata+acquisition&locations=Europe%2CSpain"
+	//url := "https://www.remoterocketship.com/?page=1&sort=DateAdded&jobTitle=scraping%2Ccrawling%2Cscraper%2Ccrawler%2Cdata+acquisition&locations=Europe%2CSpain"
+	url := "https://www.remoterocketship.com/remote-jobs/?page=1&sort=DateAdded&jobTitle=scraping%2Ccrawling%2Cscraper%2Ccrawler%2Cdata%2520acquisition&locations=Europe%2CSpain"
 
 	return rrs.Session.Get(ctx, url, nil)
 

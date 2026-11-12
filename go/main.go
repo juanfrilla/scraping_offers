@@ -9,7 +9,6 @@ import (
 	"scraping_offers/go/scrapers/empleate"
 	"scraping_offers/go/scrapers/infojobs"
 	"scraping_offers/go/scrapers/linkedin"
-	"scraping_offers/go/scrapers/remoteok"
 	"scraping_offers/go/scrapers/remoterocketship"
 	"scraping_offers/go/scrapers/simplyhired"
 	"scraping_offers/go/utils"
@@ -28,7 +27,7 @@ func main() {
 	scrapers := []Scraper{
 		linkedin.NewLinkedinScraper(),
 		infojobs.NewInfojobsScraper(),
-		remoteok.NewRemoteOKScraper(),
+		//remoteok.NewRemoteOKScraper(),
 		remoterocketship.NewRemoteRocketshipScraper(),
 		empleate.NewEmpleateScraper(),
 	}
