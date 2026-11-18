@@ -70,7 +70,6 @@ func (shs *SimplyHiredScraper) Parse(jobsData SimplyHiredJobList, seenURLs map[s
 	jobs := pageProps.Jobs
 
 	for i, j := range jobs {
-		var singleJob SimplyHiredJob
 		shs.Logger.Printf("Processing offer %d/%d", i+1, len(jobs))
 
 		botURL := strings.Split(j.BotURL, "?")[0]
@@ -99,7 +98,13 @@ func (shs *SimplyHiredScraper) Parse(jobsData SimplyHiredJobList, seenURLs map[s
 			log.Fatal("error parsing job HTML: %w", err)
 		}
 
-		utils.GetJSONFromHTML(doc, &singleJob)
+		singleJobPtr, err := utils.GetJSONFromHTML[SimplyHiredJob](doc)
+		if err != nil {
+			shs.Logger.Printf("Error extracting job JSON: %v", err)
+			continue
+		}
+
+		singleJob := *singleJobPtr
 
 		jobInfoProps := singleJob.Props
 		jobInfoPageProps := jobInfoProps.PageProps
@@ -133,25 +138,33 @@ func (shs *SimplyHiredScraper) Parse(jobsData SimplyHiredJobList, seenURLs map[s
 
 func (shs *SimplyHiredScraper) Scrape() ([]models.ScrapedJob, error) {
 	var allJobs []models.ScrapedJob
+
 	seenURLs := make(map[string]bool)
+
 	for _, kw := range constants.SearchKeywords {
 		shs.Logger.Printf("Scraping word: %s", kw)
+
 		resp, err := shs.getJobsRequest(kw)
 		if err != nil {
-			return nil, fmt.Errorf("Error getJobsRequest para %s: %v", kw, err)
+			return nil, fmt.Errorf("error getJobsRequest para %s: %w", kw, err)
 		}
+
 		doc, err := goquery.NewDocumentFromReader(resp.Body)
 		resp.Body.Close()
+
 		if err != nil {
-			return nil, fmt.Errorf("Error parsing HTML para %s: %v", kw, err)
+			return nil, fmt.Errorf("error parsing HTML para %s: %w", kw, err)
 		}
-		var rJSON SimplyHiredJobList
-		if err := utils.GetJSONFromHTML(doc, &rJSON); err != nil {
-			return nil, fmt.Errorf("Error GettingJSONFromHTML para %s: %v", kw, err)
+
+		rJSON, err := utils.GetJSONFromHTML[SimplyHiredJobList](doc)
+		if err != nil {
+			return nil, fmt.Errorf("error GetJSONFromHTML para %s: %w", kw, err)
 		}
+
 		if len(rJSON.Props.PageProps.Jobs) > 0 {
-			jobs := shs.Parse(rJSON, seenURLs)
+			jobs := shs.Parse(*rJSON, seenURLs)
 			allJobs = append(allJobs, jobs...)
+
 			shs.Logger.Printf("Found %d jobs for %s", len(jobs), kw)
 		}
 	}

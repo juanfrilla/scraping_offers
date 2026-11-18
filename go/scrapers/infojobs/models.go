@@ -1,182 +1,185 @@
 package infojobs
 
-type Root struct {
-	User            interface{}        `json:"user"`
-	Experimentation Experimentation    `json:"experimentation"`
-	HeaderLinks     HeaderLinks        `json:"headerLinks"`
-	FooterLinks     FooterLinks        `json:"footerLinks"`
-	Notification    NotificationParams `json:"notificationParams"`
-	Offers          []Offer            `json:"offers"`
-	Aggregation     Aggregation        `json:"aggregation"`
-	Navigation      Navigation         `json:"navigation"`
-	Search          Search             `json:"search"`
-	Overview        Overview           `json:"overview"`
-	Metadata        Metadata           `json:"metadata"`
-	Segmentation    Segmentation       `json:"segmentation"`
-	CompanyLogos    CompanyLogos       `json:"companyLogos"`
-	TrackingProps   TrackingProperties `json:"trackingProperties"`
-	TopSearches     []TopSearch        `json:"topSearches"`
-	TrackingTags    map[string]Tag     `json:"trackingTags"`
-	Device          string             `json:"device"`
-	SearchByType    string             `json:"searchByType"`
-}
+import "time"
 
-type Experimentation struct {
-	AnonymousID   string `json:"anonymousId"`
-	SegmentUserID string `json:"segmentUserId"`
-	CurrentUserID string `json:"currentUserId"`
-}
-
-type HeaderLinks struct {
-	Navigation []Link `json:"navigation"`
-	User       []Link `json:"user"`
-}
-
-type FooterLinks struct {
-	Portals    []Link      `json:"portals"`
-	Social     SocialLinks `json:"social"`
-	Navigation FooterNav   `json:"navigation"`
-	AppsStore  AppsStore   `json:"appsStore"`
-}
-
-type SocialLinks struct {
-	Facebook Link `json:"facebook"`
-	Twitter  Link `json:"twitter"`
-	Youtube  Link `json:"youtube"`
-}
-
-type FooterNav struct {
-	Us    []Link `json:"us"`
-	About []Link `json:"about"`
-	More  []Link `json:"more"`
-	Press []Link `json:"press"`
-}
-
-type AppsStore struct {
-	Android AppStoreItem `json:"android"`
-	IOS     AppStoreItem `json:"ios"`
-}
-
-type AppStoreItem struct {
-	Href string `json:"href"`
-	Img  string `json:"img"`
-	Alt  string `json:"alt"`
-}
-
-type NotificationParams struct {
-	OfferName string `json:"offerName"`
-}
-
-type Offer struct {
-	Code         string   `json:"code"`
-	Title        string   `json:"title"`
-	Description  string   `json:"description"`
-	City         string   `json:"city"`
-	Link         string   `json:"link"`
-	ContractType string   `json:"contractType"`
-	Salary       *Salary  `json:"salary"`
-	Workday      string   `json:"workday"`
-	Teleworking  string   `json:"teleworking"`
-	PublishedAt  string   `json:"publishedAt"`
-	CompanyName  string   `json:"companyName"`
-	CompanyLogo  string   `json:"companyLogo"`
-	CompanyLink  string   `json:"companyLink"`
-	States       []string `json:"states"`
-	Upsellings   []string `json:"upsellings"`
-	Executive    bool     `json:"executive"`
-	NewBOId      string   `json:"newBOId"`
-}
-
-type Salary struct {
-	Range struct {
-		Min int `json:"min"`
-		Max int `json:"max"`
-	} `json:"range"`
-	Period   string `json:"period"`
-	Currency string `json:"currency"`
-	Type     string `json:"type"`
-}
-
-type Aggregation struct {
-	Province     []AggItem `json:"province"`
-	City         []AggItem `json:"city"`
-	Teleworking  []AggItem `json:"teleworking"`
-	Category     []AggItem `json:"category"`
-	Education    []AggItem `json:"education"`
-	Workday      []AggItem `json:"workday"`
-	ContractType []AggItem `json:"contractType"`
-	Segment      []AggItem `json:"segment"`
-	Country      []AggItem `json:"country"`
-}
-
-type AggItem struct {
-	Value        string `json:"value"`
-	Label        string `json:"label"`
-	Count        int    `json:"count"`
-	Order        int    `json:"order"`
-	SemanticLink string `json:"semanticLink,omitempty"`
-}
-
-type Navigation struct {
-	Self             int      `json:"self"`
-	Pages            []int    `json:"pages"`
-	TotalPages       int      `json:"totalPages"`
-	TotalElements    int      `json:"totalElements"`
-	SortedBy         string   `json:"sortedBy"`
-	AvailableSorting []string `json:"availableSortingMethods"`
-}
-
-type Search struct {
-	Keyword struct {
-		Value string `json:"value"`
-	} `json:"keyword"`
-	CountryIds     []string `json:"countryIds"`
-	ProvinceIds    []string `json:"provinceIds"`
-	CityIds        []string `json:"cityIds"`
-	TeleworkingIds []string `json:"teleworkingIds"`
-}
-
-type Overview struct {
-	TotalElements int `json:"totalElements"`
-}
-
-type Metadata struct {
-	Title             string   `json:"title"`
-	MetaKeywords      string   `json:"metaKeywords"`
-	MetaDescription   string   `json:"metaDescription"`
-	CanonicalURL      string   `json:"canonicalUrl"`
-	ActiveExperiments []string `json:"activeExperiments"`
-}
-
-type Segmentation struct {
-	UtagParams map[string]interface{} `json:"utagParams"`
-}
-
-type CompanyLogos struct {
-	Referer      string              `json:"referer"`
-	Segmentation map[string][]string `json:"segmentation"`
-}
-
-type TrackingProperties struct {
-	Country  string `json:"country"`
-	PageType string `json:"page_type"`
-	Keyword  string `json:"keyword"`
-}
-
-type TopSearch struct {
-	Title string `json:"title"`
-	Links []Link `json:"links"`
-}
-
-type Tag struct {
-	Track           string `json:"track"`
-	TrackProperties string `json:"track-properties"`
-}
-
-type Link struct {
-	Href      string `json:"href"`
-	Title     string `json:"title"`
-	Label     string `json:"label,omitempty"`
-	ClassName string `json:"className,omitempty"`
-	Type      string `json:"type,omitempty"`
+type IjData struct {
+	Offers []struct {
+		Code         string    `json:"code"`
+		Title        string    `json:"title"`
+		Description  string    `json:"description"`
+		City         string    `json:"city"`
+		Link         string    `json:"link"`
+		ContractType string    `json:"contractType"`
+		Workday      string    `json:"workday"`
+		Teleworking  string    `json:"teleworking"`
+		PublishedAt  time.Time `json:"publishedAt"`
+		CompanyName  string    `json:"companyName"`
+		CompanyLogo  string    `json:"companyLogo"`
+		CompanyLink  string    `json:"companyLink"`
+		States       []any     `json:"states"`
+		Upsellings   []any     `json:"upsellings"`
+		Executive    bool      `json:"executive"`
+		NewBOID      string    `json:"newBOId"`
+		Salary       struct {
+			Range struct {
+				Min int `json:"min"`
+				Max int `json:"max"`
+			} `json:"range"`
+			Period   string `json:"period"`
+			Currency string `json:"currency"`
+			Type     string `json:"type"`
+		} `json:"salary,omitempty"`
+	} `json:"offers"`
+	Aggregation struct {
+		Province []struct {
+			Value        string `json:"value"`
+			Label        string `json:"label"`
+			Count        int    `json:"count"`
+			Order        int    `json:"order"`
+			SemanticLink string `json:"semanticLink"`
+		} `json:"province"`
+		City []struct {
+			Value string `json:"value"`
+			Label string `json:"label"`
+			Count int    `json:"count"`
+			Order int    `json:"order"`
+		} `json:"city"`
+		Teleworking []struct {
+			Value string `json:"value"`
+			Label string `json:"label"`
+			Count int    `json:"count"`
+			Order int    `json:"order"`
+		} `json:"teleworking"`
+		Category []struct {
+			Value        string `json:"value"`
+			Label        string `json:"label"`
+			Count        int    `json:"count"`
+			Order        int    `json:"order"`
+			SemanticLink string `json:"semanticLink"`
+		} `json:"category"`
+		Education []struct {
+			Value string `json:"value"`
+			Label string `json:"label"`
+			Count int    `json:"count"`
+			Order int    `json:"order"`
+		} `json:"education"`
+		Workday []struct {
+			Value string `json:"value"`
+			Label string `json:"label"`
+			Count int    `json:"count"`
+			Order int    `json:"order"`
+		} `json:"workday"`
+		ContractType []struct {
+			Value string `json:"value"`
+			Label string `json:"label"`
+			Count int    `json:"count"`
+			Order int    `json:"order"`
+		} `json:"contractType"`
+		Segment []any `json:"segment"`
+		Country []struct {
+			Value string `json:"value"`
+			Label string `json:"label"`
+			Count int    `json:"count"`
+			Order int    `json:"order"`
+		} `json:"country"`
+	} `json:"aggregation"`
+	Navigation struct {
+		Self                    int      `json:"self"`
+		Pages                   []int    `json:"pages"`
+		TotalPages              int      `json:"totalPages"`
+		TotalElements           int      `json:"totalElements"`
+		SortedBy                string   `json:"sortedBy"`
+		AvailableSortingMethods []string `json:"availableSortingMethods"`
+	} `json:"navigation"`
+	Search struct {
+		Keyword struct {
+			Value                 string `json:"value"`
+			NormalizedJobTitleIds []any  `json:"normalizedJobTitleIds"`
+		} `json:"keyword"`
+		CountryIds         []any  `json:"countryIds"`
+		ProvinceIds        []any  `json:"provinceIds"`
+		CityIds            []any  `json:"cityIds"`
+		TeleworkingIds     []any  `json:"teleworkingIds"`
+		CategoryIds        []any  `json:"categoryIds"`
+		SubcategoryIds     []any  `json:"subcategoryIds"`
+		EducationIds       []any  `json:"educationIds"`
+		WorkdayIds         []any  `json:"workdayIds"`
+		ContractTypeIds    []any  `json:"contractTypeIds"`
+		SegmentID          any    `json:"segmentId"`
+		Salary             any    `json:"salary"`
+		Experience         any    `json:"experience"`
+		SinceDate          string `json:"sinceDate"`
+		OnlyForeignCountry bool   `json:"onlyForeignCountry"`
+		SortBy             string `json:"sortBy"`
+		Location           struct {
+			Countries []any `json:"countries"`
+			Provinces []any `json:"provinces"`
+		} `json:"location"`
+	} `json:"search"`
+	Overview struct {
+		TotalElements int    `json:"totalElements"`
+		Title         string `json:"title"`
+		Keyword       struct {
+			Value string `json:"value"`
+			Link  string `json:"link"`
+			Title string `json:"title"`
+		} `json:"keyword"`
+		Countries []any `json:"countries"`
+		Provinces []any `json:"provinces"`
+		Cities    []any `json:"cities"`
+	} `json:"overview"`
+	Metadata struct {
+		Title             string `json:"title"`
+		MetaKeywords      string `json:"metaKeywords"`
+		MetaDescription   string `json:"metaDescription"`
+		CanonicalURL      string `json:"canonicalUrl"`
+		ActiveExperiments []any  `json:"activeExperiments"`
+	} `json:"metadata"`
+	Segmentation struct {
+		UtagParams struct {
+			EsSchAdProvince          []string `json:"es_sch_ad_province"`
+			EsSchAdProvinceID        []int    `json:"es_sch_ad_province_id"`
+			EsSchFilterAutocomplete  int      `json:"es_sch_filter_autocomplete"`
+			EsSchSearchResultsNumber int      `json:"es_sch_search_results_number"`
+			EsSchSearchTerms         string   `json:"es_sch_search_terms"`
+			OfferSearchPage          int      `json:"offer_search_page"`
+			OfferSearchPageLimit     int      `json:"offer_search_page_limit"`
+			RegionLevel2ID           []int    `json:"region_level2_id"`
+			SearchTerms              string   `json:"search_terms"`
+			AdsNamePage              string   `json:"ads_name_page"`
+			Seccion                  string   `json:"seccion"`
+			Site                     string   `json:"site"`
+			IsMsite                  string   `json:"is_msite"`
+			EsSchAdsNamePage         string   `json:"es_sch_ads_name_page"`
+			EsSchEventName           string   `json:"es_sch_event_name"`
+			EsSchAdobeIsEnabled      string   `json:"es_sch_adobe_is_enabled"`
+		} `json:"utagParams"`
+	} `json:"segmentation"`
+	CompanyLogos struct {
+		Referer      string `json:"referer"`
+		Segmentation struct {
+			Keyword []string `json:"keyword"`
+		} `json:"segmentation"`
+	} `json:"companyLogos"`
+	EligibleForAutomaticAlertCreation bool `json:"eligibleForAutomaticAlertCreation"`
+	TrackingProperties                struct {
+		PageType                   string `json:"page_type"`
+		Channel                    string `json:"channel"`
+		OfferOrigin                string `json:"offer_origin"`
+		Vertical                   string `json:"vertical"`
+		Section                    string `json:"section"`
+		Platform                   string `json:"platform"`
+		CategoryLevel1             string `json:"category_level1"`
+		SearchWithAutocomplete     bool   `json:"search_with_autocomplete"`
+		Executive                  bool   `json:"executive"`
+		Site                       string `json:"site"`
+		Province                   string `json:"province"`
+		ListResultNum              int    `json:"list_result_num"`
+		PageName                   string `json:"page_name"`
+		EventName                  string `json:"event_name"`
+		Keyword                    string `json:"keyword"`
+		International              bool   `json:"international"`
+		SegmentEventAlreadyTracked bool   `json:"segment_event_already_tracked"`
+		Order                      string `json:"order"`
+	} `json:"trackingProperties"`
 }

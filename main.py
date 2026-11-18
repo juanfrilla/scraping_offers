@@ -1,7 +1,7 @@
 import os
 import subprocess
 import threading
-from datetime import date, datetime, timezone
+from datetime import UTC, date, datetime
 
 import streamlit as st
 from dateutil.parser import isoparse
@@ -9,11 +9,7 @@ from dotenv import load_dotenv
 
 from py.constants import DATA_FILE, LOG_DIR
 from py.logger import get_logger
-from py.utils import (
-    last_scraped_today,
-    read_json,
-    update_last_scraped,
-)
+from py.utils import last_scraped_today, read_json, update_last_scraped
 
 load_dotenv()
 
@@ -58,7 +54,7 @@ def run_go_scraper() -> tuple[bool, str]:
         t1.start()
         t2.start()
 
-        process.wait(timeout=120)
+        process.wait()
 
         t1.join()
         t2.join()
@@ -175,7 +171,7 @@ with st.spinner("Scraping jobs..."):
 
         if raw_date:
             posted_dt = isoparse(raw_date)
-            now = datetime.now(timezone.utc)
+            now = datetime.now(UTC)
 
         is_new = (now - posted_dt).days < 3
         date_posted = posted_dt.strftime("%d/%m/%Y")
@@ -185,7 +181,7 @@ with st.spinner("Scraping jobs..."):
             col_logo, col_info, col_button = st.columns([1, 4, 1.5])
 
             with col_logo:
-                logo_url = job.get("logo_url")
+                logo_url = job.get("logo_url") or None
                 if logo_url:
                     st.image(logo_url, width=80)
                 else:

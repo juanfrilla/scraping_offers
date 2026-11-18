@@ -204,9 +204,7 @@ func (ls *LinkedinScraper) parse(urls []string) ([]models.ScrapedJob, error) {
 
 		// htmlFilename := fmt.Sprintf("debug_%s.html", "offer")
 		// err = os.WriteFile(htmlFilename, []byte(html), 0644)
-
-		var jsonContent LinkedInJob
-		if err := utils.GetJSONFromHTML(doc, &jsonContent); err == nil && jsonContent.Title != "" {
+		if jsonContent, err := utils.GetJSONFromHTML[LinkedInJob](doc); err == nil && jsonContent.Title != "" {
 
 			title := jsonContent.Title
 			jlRaw := jsonContent.JobLocation

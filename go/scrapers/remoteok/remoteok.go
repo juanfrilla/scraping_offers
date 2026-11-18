@@ -77,7 +77,6 @@ func (ro *RemoteOKScraper) parse(doc *goquery.Document) ([]models.ScrapedJob, er
 	total := jobs.Length()
 
 	jobs.EachWithBreak(func(i int, job *goquery.Selection) bool {
-		var singleJob RemoteOkJob
 
 		dataID, _ := job.Attr("data-id")
 		botURL, _ := job.Attr("data-url")
@@ -87,7 +86,6 @@ func (ro *RemoteOKScraper) parse(doc *goquery.Document) ([]models.ScrapedJob, er
 
 		fixedHTML := strings.ReplaceAll(html, "}{", "},{")
 
-
 		fixedDoc, err := goquery.NewDocumentFromReader(strings.NewReader(fixedHTML))
 		if err != nil {
 			ro.Logger.Printf("Error creating fixed goquery doc: %v", err)
@@ -95,7 +93,7 @@ func (ro *RemoteOKScraper) parse(doc *goquery.Document) ([]models.ScrapedJob, er
 			return false
 		}
 
-		err = utils.GetJSONFromHTML(fixedDoc.Selection, &singleJob)
+		singleJob, err := utils.GetJSONFromHTML[RemoteOkJob](fixedDoc.Selection)
 		if err != nil {
 			ro.Logger.Printf("Error parsing JSON after fix: %v", err)
 			parseErr = err

@@ -6,6 +6,7 @@ import (
 	"os"
 	"scraping_offers/go/constants"
 	"scraping_offers/go/models"
+	"scraping_offers/go/scrapers/ashby"
 	"scraping_offers/go/scrapers/empleate"
 	"scraping_offers/go/scrapers/infojobs"
 	"scraping_offers/go/scrapers/linkedin"
@@ -27,7 +28,7 @@ func main() {
 	scrapers := []Scraper{
 		linkedin.NewLinkedinScraper(),
 		infojobs.NewInfojobsScraper(),
-		//remoteok.NewRemoteOKScraper(),
+		ashby.NewAshbyScraper(),
 		remoterocketship.NewRemoteRocketshipScraper(),
 		empleate.NewEmpleateScraper(),
 	}
@@ -36,8 +37,8 @@ func main() {
 		scrapers = append(scrapers, simplyhired.NewSimplyHiredScraper())
 	}
 
-	resultsChan := make(chan []models.ScrapedJob)
-	errorsChan := make(chan error)
+	resultsChan := make(chan []models.ScrapedJob, len(scrapers))
+	errorsChan := make(chan error, len(scrapers))
 	var wg sync.WaitGroup
 	for _, scraper := range scrapers {
 		wg.Add(1)
@@ -80,6 +81,10 @@ func main() {
 		os.Exit(1)
 	}
 	defer file.Close()
+
+	if allJobs == nil {
+		allJobs = []models.ScrapedJob{}
+	}
 
 	encoder := json.NewEncoder(file)
 	encoder.SetIndent("", "  ")

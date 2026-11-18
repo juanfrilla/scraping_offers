@@ -6,6 +6,7 @@ import (
 	"math/rand"
 	"os"
 	"path/filepath"
+	"reflect"
 	"regexp"
 	"scraping_offers/go/constants"
 	"strings"
@@ -94,38 +95,65 @@ func IsForbidden(target string, forbiddens []string) bool {
 }
 
 func FindKeywordInDescription(text string) string {
-	pattern := regexp.MustCompile(`(?i)\b(crawl|scrap|acqui)\w+`)
-	match := pattern.FindString(text)
-	return match
+	pattern := regexp.MustCompile(
+		`(?i)\b(scraping|crawling|data\s+acquisition|scraper|crawler|anti[-\s]?bot|data\s+extraction|reverse\s+engineering|security\s+researcher|browser\s+automation|web\s+automation|web\s+scraping|web\s+crawling|bot\s+detection|bot\s+mitigation|browser\s+fingerprinting|web\s+security|reverse\s+engineer)\b`,
+	)
+
+	return pattern.FindString(text)
 }
 
-func GetJSONFromHTML(node HTMLNode, target interface{}) error {
+func GetJSONFromHTML[T any](node HTMLNode) (*T, error) {
 	for _, t := range constants.JsonTypes {
 		selector := fmt.Sprintf("script[type='%s']", t)
-		scriptTag := node.Find(selector).First()
-		if scriptTag.Length() > 0 {
-			return DecodeJSONP([]byte(scriptTag.Text()), target)
+		scripts := node.Find(selector)
+
+		for i := range scripts.Nodes {
+			var result T
+
+			err := DecodeJSONP(
+				[]byte(scripts.Eq(i).Text()),
+				&result,
+			)
+
+			if err == nil && !reflect.ValueOf(result).IsZero() {
+				return &result, nil
+			}
 		}
 	}
 
 	var targetText string
+
 	node.Find("script").Each(func(i int, sl *goquery.Selection) {
 		text := sl.Text()
+
 		if strings.Contains(text, "window.__INITIAL_PROPS__") {
 			targetText = text
 		}
 	})
 
 	if targetText != "" {
-		return DecodeJSONP([]byte(targetText), target)
+		var result T
+
+		if err := DecodeJSONP([]byte(targetText), &result); err != nil {
+			return nil, err
+		}
+
+		return &result, nil
 	}
 
 	lastScript := node.Find("script").Last()
+
 	if lastScript.Length() > 0 {
-		return DecodeJSONP([]byte(lastScript.Text()), target)
+		var result T
+
+		if err := DecodeJSONP([]byte(lastScript.Text()), &result); err != nil {
+			return nil, err
+		}
+
+		return &result, nil
 	}
 
-	return fmt.Errorf("no se encontró JSON válido en el HTML")
+	return nil, fmt.Errorf("no se encontró JSON válido en el HTML")
 }
 func DecodeJSONP(content []byte, target interface{}) error {
 	text := string(content)

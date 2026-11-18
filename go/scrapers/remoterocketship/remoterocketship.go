@@ -38,7 +38,6 @@ func (rrs *RemoteRocketshipScraper) Name() string {
 }
 func (rrs *RemoteRocketshipScraper) getJobsRequest() (*client.Response, error) {
 	ctx := context.Background()
-	//url := "https://www.remoterocketship.com/?page=1&sort=DateAdded&jobTitle=scraping%2Ccrawling%2Cscraper%2Ccrawler%2Cdata+acquisition&locations=Europe%2CSpain"
 	url := "https://www.remoterocketship.com/remote-jobs/?page=1&sort=DateAdded&jobTitle=scraping%2Ccrawling%2Cscraper%2Ccrawler%2Cdata%2520acquisition&locations=Europe%2CSpain"
 
 	return rrs.Session.Get(ctx, url, nil)
@@ -53,7 +52,7 @@ func (rrs *RemoteRocketshipScraper) jobInformationRequest(jobURL string) (*clien
 
 func (rrs *RemoteRocketshipScraper) parse(responseJSON *RemoteRockJobList) ([]models.ScrapedJob, error) {
 	var records []models.ScrapedJob
-	var singleJob RemoteRockJob
+	//var singleJob RemoteRockJob
 	props := responseJSON.Props
 	pageProps := props.PageProps
 	jobs := pageProps.InitialJobOpenings
@@ -93,7 +92,7 @@ func (rrs *RemoteRocketshipScraper) parse(responseJSON *RemoteRockJobList) ([]mo
 				return nil, fmt.Errorf("error parsing job HTML: %v", err)
 			}
 
-			utils.GetJSONFromHTML(doc, &singleJob)
+			singleJob, err := utils.GetJSONFromHTML[RemoteRockJob](doc)
 
 			p := singleJob.Props
 			jobInfoProps := p.PageProps
@@ -147,12 +146,13 @@ func (rrs *RemoteRocketshipScraper) Scrape() ([]models.ScrapedJob, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error parsing HTML: %w", err)
 	}
-	var rJSON RemoteRockJobList
-	if err := utils.GetJSONFromHTML(doc, &rJSON); err != nil {
-		return nil, fmt.Errorf("error GettingJSONFromHTML: %w", err)
+
+	rJSON, err := utils.GetJSONFromHTML[RemoteRockJobList](doc)
+	if err != nil {
+		return nil, fmt.Errorf("error GetJSONFromHTML: %w", err)
 	}
 
-	return rrs.parse(&rJSON)
+	return rrs.parse(rJSON)
 }
 
 func normalizeString(s string) string {

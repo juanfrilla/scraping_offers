@@ -2,16 +2,14 @@ package infojobs
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
-	"net/url"
 	"os"
 	"scraping_offers/go/constants"
 	"scraping_offers/go/models"
 	"scraping_offers/go/utils"
-	"strings"
 
-	"github.com/PuerkitoBio/goquery"
 	"github.com/sardanioss/httpcloak/client"
 )
 
@@ -39,20 +37,9 @@ func (ijs *InfojobsScraper) InfojobsJobSearchRequest(keyword string) (*client.Re
 	ctx := context.Background()
 	ijs.Logger.Printf("Using %s", ijs.impersonate)
 	c := client.NewClient(ijs.impersonate)
-	targetURL := "https://www.infojobs.net/jobsearch/search-results/list.xhtml"
+	targetURL := "https://www.infojobs.net/webapp/offers/search?keyword=%22scraping%22&searchByType=empty&referer=search-new"
 
-	formData := url.Values{}
-	formData.Set("palabra", keyword)
-	formData.Set("normalizedJobTitleId", "")
-	formData.Set("of_provincia", "0")
-	formData.Set("canal", "0")
-	formData.Set("origen_busqueda", "0")
-	formData.Set("origen_accion", "0")
-	formData.Set("vieneUrlExecutive", "false")
-
-	body := strings.NewReader(formData.Encode())
-
-	resp, err := c.Post(ctx, targetURL, body, nil)
+	resp, err := c.Get(ctx, targetURL, nil)
 	if err != nil {
 		return nil, fmt.Errorf("error in POST search: %w", err)
 	}
@@ -62,8 +49,7 @@ func (ijs *InfojobsScraper) InfojobsJobSearchRequest(keyword string) (*client.Re
 
 func (ijs *InfojobsScraper) Scrape() ([]models.ScrapedJob, error) {
 	var records []models.ScrapedJob
-	var rawData Root
-
+	var rawData IjData
 	for _, kw := range constants.SearchKeywords {
 		ijs.Logger.Printf("Searching for: %s", kw)
 		resp, err := ijs.InfojobsJobSearchRequest(kw)
@@ -72,16 +58,21 @@ func (ijs *InfojobsScraper) Scrape() ([]models.ScrapedJob, error) {
 		}
 		if resp.StatusCode != 200 {
 			ijs.Logger.Printf("Bad status for %s: %d", kw, resp.StatusCode)
+			resp.Body.Close() // Importante cerrar el body
 			continue
 		}
-		doc, err := goquery.NewDocumentFromReader(resp.Body)
 
-		// html, err := doc.Html()
+		resp.Body.Close() // Cerramos el body original ya que tenemos los datos en memoria
+		if err != nil {
+			return nil, fmt.Errorf("error reading response body: %w", err)
+		}
 
-		// htmlFilename := fmt.Sprintf("debug_%s.html", kw)
-		// err = os.WriteFile(htmlFilename, []byte(html), 0644)
-
-		utils.GetJSONFromHTML(doc, &rawData)
+		if err := json.NewDecoder(resp.Body).Decode(&rawData); err != nil {
+			panic(fmt.Errorf("error decodificando JSON: %w", err))
+		}
+		if err != nil {
+			return nil, fmt.Errorf("error parsing JSON from HTML: %w", err)
+		}
 
 		if err != nil {
 			return nil, fmt.Errorf("error parsing HTML: %w", err)
@@ -99,7 +90,7 @@ func (ijs *InfojobsScraper) Scrape() ([]models.ScrapedJob, error) {
 					Company:         company,
 					Location:        offer.City,
 					URL:             offer.Link,
-					DatePosted:      offer.PublishedAt,
+					DatePosted:      utils.FromTimestampToISOFormat(offer.PublishedAt.UnixMilli()),
 					Modality:        utils.DetermineModality(offer.Title, offer.Description),
 					Platform:        ijs.ScraperName,
 					KeywordAppeared: kw,
