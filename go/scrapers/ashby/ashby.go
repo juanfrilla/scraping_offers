@@ -199,7 +199,7 @@ func (s *AshbyScraper) Scrape() ([]models.ScrapedJob, error) {
 			if job.JobURL != "" &&
 				keyword != "" &&
 				isRemote &&
-				!utils.IsForbidden(job.Title, constants.ForbiddenKeywords) && !utils.IsForbidden(location, constants.ForbiddenCountries) {
+				!utils.IsForbidden(job.Title, constants.ForbiddenKeywords) && !utils.IsForbidden(location, constants.ForbiddenCountries) && !utils.IsForbidden(companyStr, constants.ForbiddenCompanies) {
 
 				var modality string
 
