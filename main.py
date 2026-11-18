@@ -85,37 +85,8 @@ def get_jobs_data() -> list:
 
     return []
 
-
-def force_scraping():
-    """Ejecuta el scraper de Go directamente desde Streamlit."""
-    lock = get_scraper_lock()
-
-    if not lock.acquire(blocking=False):
-        st.warning("Scraping is already running.")
-        return
-
-    try:
-        with st.spinner("Scraping jobs..."):
-            success, message = run_go_scraper()
-
-        if success:
-            update_last_scraped()
-            get_jobs_data.clear()
-            st.success("Scraping completed successfully.")
-            st.rerun()
-        else:
-            st.error(f"Scraping failed: {message}")
-
-    finally:
-        lock.release()
-
-
 os.makedirs(LOG_DIR, exist_ok=True)
 
-st.sidebar.header("Actions")
-
-if st.sidebar.button("🔄 Force scraping"):
-    force_scraping()
 
 with st.spinner("Loading jobs..."):
     jobs = get_jobs_data()

@@ -54,7 +54,6 @@ GitHub Actions handles three different scenarios:
 2. **Scheduled execution:** Runs the Go scraper daily at 00:00 UTC and commits updated data to the repository.
 3. **Manual execution:** Allows triggering the complete scraping workflow from the GitHub Actions interface.
 
-The Streamlit dashboard also provides a **Force Scraping** button to execute the Go scraper directly from the application environment.
 
 ---
 
@@ -124,8 +123,6 @@ streamlit run main.py
 ```
 
 The dashboard loads the available job postings from `data/jobs.json`.
-
-You can trigger a new scraping run using the **Force Scraping** button in the sidebar. This executes the Go scraper directly from the application environment and refreshes the dashboard when the process finishes.
 
 ### Option B — Standalone Go Scraper
 
