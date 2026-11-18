@@ -1,4 +1,4 @@
-# 🕵️‍♂️ Job Scraping Aggregator: Spain
+# 🕵️‍♂️ Job Scraping Aggregator
 
 A specialized web scraping tool designed to aggregate job postings from **LinkedIn**, **InfoJobs**, **Tecnoempleo**, **SimplyHired**, **RemoteRocketShip**, **RemoteOK** and **Ashby**.
 
