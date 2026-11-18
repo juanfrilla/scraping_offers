@@ -74,6 +74,7 @@ jobs:
 
           git add -f ./go/bin/scraper_go
           git add -f ./data/jobs.json
+          git add -f ./data/last_scraped.json
 
           if git diff --staged --quiet; then
             echo "No changes detected."

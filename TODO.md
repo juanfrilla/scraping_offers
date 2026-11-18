@@ -4,3 +4,4 @@
 # dejar por defecto unos trabajso y luego scrapear, poner is_active, y al final borrar los is_active false
 # hacer un polling a la bbdd para ir recogiendo lo que va entrando
 # poner external_id a los trabajos
+# poner timeout a las requests de golang
