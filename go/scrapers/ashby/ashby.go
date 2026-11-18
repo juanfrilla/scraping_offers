@@ -189,7 +189,7 @@ func (s *AshbyScraper) Scrape() ([]models.ScrapedJob, error) {
 
 			}
 
-			location := job.Location
+			location := job.Address.PostalAddress.AddressCountry
 
 			description := job.DescriptionPlain
 

@@ -103,7 +103,7 @@ var ForbiddenCompanies = []string{
 }
 
 var ForbiddenCountries = []string{
-	"india", "phphilippines",
+	"india", "philippines",
 }
 
 var JsonTypes = []string{"application/json", "application/ld+json"}
