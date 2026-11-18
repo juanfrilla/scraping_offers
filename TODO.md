@@ -5,3 +5,4 @@
 # hacer un polling a la bbdd para ir recogiendo lo que va entrando
 # poner external_id a los trabajos
 # poner timeout a las requests de golang
+# poner retrieved 0 offers cuando no traiga ofertas, o cuando la query no traiga ofertas
