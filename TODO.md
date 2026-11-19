@@ -4,3 +4,7 @@
 # poner external_id a los trabajos
 # poner timeout a las requests de golang
 # poner retrieved 0 offers cuando no traiga ofertas, o cuando la query no traiga ofertas
+
+# grafana gratis
+# supabase para api y postgresql 
+# quitar streamlit y poner front-end en gh pages o cloudflare pages
