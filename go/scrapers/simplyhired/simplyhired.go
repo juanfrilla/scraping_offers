@@ -114,23 +114,25 @@ func (shs *SimplyHiredScraper) Parse(jobsData SimplyHiredJobList, seenURLs map[s
 		}
 
 		keyword := utils.FindKeywordInDescription(description)
-		if keyword != "" {
-			record := models.ScrapedJob{
-				Title:           title,
-				Company:         company,
-				Location:        j.Location,
-				URL:             "https://www.simplyhired.es" + botURL,
-				DatePosted:      utils.FromTimestampToISOFormat(j.DateOnIndeed),
-				Modality:        utils.DetermineModality(title, description),
-				Platform:        shs.ScraperName,
-				KeywordAppeared: keyword,
-				LogoURL:         jobInfoPageProps.EmployerSquareLogoURL,
-			}
-			records = append(records, record)
-		} else {
+
+		if keyword == "" {
 			shs.Logger.Printf("Discarding title %s from company %s", title, company)
 			continue
 		}
+
+		record := models.ScrapedJob{
+			Title:           title,
+			Company:         company,
+			Location:        j.Location,
+			URL:             "https://www.simplyhired.es" + botURL,
+			DatePosted:      utils.FromTimestampToISOFormat(j.DateOnIndeed),
+			Modality:        utils.DetermineModality(title, description),
+			Platform:        shs.ScraperName,
+			KeywordAppeared: keyword,
+			LogoURL:         jobInfoPageProps.EmployerSquareLogoURL,
+		}
+
+		records = append(records, record)
 	}
 
 	return records

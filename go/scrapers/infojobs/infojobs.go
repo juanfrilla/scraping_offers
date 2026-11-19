@@ -84,21 +84,26 @@ func (ijs *InfojobsScraper) Scrape() ([]models.ScrapedJob, error) {
 			description := offer.Description
 			company := utils.NormalizeString(offer.CompanyName)
 			keyword := utils.FindKeywordInDescription(description)
-			if keyword != "" && !utils.IsForbidden(company, constants.ForbiddenCompanies) && !utils.IsForbidden(title, constants.ForbiddenKeywords) {
-				job := models.ScrapedJob{
-					Title:           title,
-					Company:         company,
-					Location:        offer.City,
-					URL:             offer.Link,
-					DatePosted:      utils.FromTimestampToISOFormat(offer.PublishedAt.UnixMilli()),
-					Modality:        utils.DetermineModality(offer.Title, offer.Description),
-					Platform:        ijs.ScraperName,
-					KeywordAppeared: kw,
-					LogoURL:         offer.CompanyLogo,
-				}
-
-				records = append(records, job)
+			if keyword == "" ||
+				utils.IsForbidden(company, constants.ForbiddenCompanies) ||
+				utils.IsForbidden(title, constants.ForbiddenKeywords) {
+				ijs.Logger.Printf("Discarding job: %s - %s", company, title)
+				continue
 			}
+
+			job := models.ScrapedJob{
+				Title:           title,
+				Company:         company,
+				Location:        offer.City,
+				URL:             offer.Link,
+				DatePosted:      utils.FromTimestampToISOFormat(offer.PublishedAt.UnixMilli()),
+				Modality:        utils.DetermineModality(offer.Title, offer.Description),
+				Platform:        ijs.ScraperName,
+				KeywordAppeared: kw,
+				LogoURL:         offer.CompanyLogo,
+			}
+
+			records = append(records, job)
 		}
 	}
 

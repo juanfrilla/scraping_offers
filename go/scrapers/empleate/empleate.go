@@ -68,23 +68,26 @@ func (es *EmpleateScraper) Parse(jsonData EmpleateJobList) []models.ScrapedJob {
 		platform := item.Entitytype
 		location := item.ProvinciaF
 		keyword := utils.FindKeywordInDescription(description)
-		if keyword != "" && !utils.IsForbidden(company, constants.ForbiddenCompanies) && !utils.IsForbidden(title, constants.ForbiddenKeywords) {
-			record := models.ScrapedJob{
-				Title:           title,
-				Company:         company,
-				Location:        location,
-				URL:             url,
-				DatePosted:      datePosted,
-				Modality:        utils.DetermineModality(title, description),
-				Platform:        platform,
-				KeywordAppeared: keyword,
-				LogoURL:         "",
-			}
-			records = append(records, record)
-		} else {
+		if keyword == "" ||
+			utils.IsForbidden(company, constants.ForbiddenCompanies) ||
+			utils.IsForbidden(title, constants.ForbiddenKeywords) {
 			es.Logger.Printf("Discarding title %s from company %s", title, company)
 			continue
 		}
+
+		record := models.ScrapedJob{
+			Title:           title,
+			Company:         company,
+			Location:        location,
+			URL:             url,
+			DatePosted:      datePosted,
+			Modality:        utils.DetermineModality(title, description),
+			Platform:        platform,
+			KeywordAppeared: keyword,
+			LogoURL:         "",
+		}
+
+		records = append(records, record)
 	}
 
 	return records
