@@ -77,6 +77,9 @@ var ForbiddenKeywords = []string{
 	"thermal",
 	"veterinarian",
 	"growth",
+	"tax",
+	"plasma",
+	"financial",
 	//"analyst",
 }
 
@@ -103,7 +106,7 @@ var ForbiddenCompanies = []string{
 }
 
 var ForbiddenCountries = []string{
-	"india", "philippines",
+	"india", "philippines","brazil", "argentina",
 }
 
 var JsonTypes = []string{"application/json", "application/ld+json"}
