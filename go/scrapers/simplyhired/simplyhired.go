@@ -102,13 +102,8 @@ func (shs *SimplyHiredScraper) Parse(jobsData SimplyHiredJobList, seenURLs map[s
 			log.Fatal("error parsing job HTML: %w", err)
 		}
 
-		if strings.ToLower(company) == "bright data" {
-			utils.SaveDebugHTML("simplyhired", fmt.Sprintf("job_%d", i), string(bodyBytes))
-		}
-
 		singleJobPtr, err := utils.GetJSONFromHTML[SimplyHiredJob](doc)
 		if err != nil {
-			utils.SaveDebugHTML("simplyhired", fmt.Sprintf("job_%d", i), string(bodyBytes))
 			shs.Logger.Printf("Error extracting job JSON: %v", err)
 			continue
 		}
