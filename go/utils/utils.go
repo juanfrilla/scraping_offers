@@ -86,17 +86,24 @@ func IsForbidden(target string, forbiddens []string) bool {
 	targetLower := strings.ToLower(target)
 
 	for _, fc := range forbiddens {
-		fcLower := strings.ToLower(fc)
-		if strings.Contains(targetLower, fcLower) {
+		pattern := `\b` + regexp.QuoteMeta(strings.ToLower(fc)) + `\b`
+
+		matched, err := regexp.MatchString(pattern, targetLower)
+		if err != nil {
+			continue
+		}
+
+		if matched {
 			return true
 		}
 	}
+
 	return false
 }
 
 func FindKeywordInDescription(text string) string {
 	pattern := regexp.MustCompile(
-		`(?i)\b(scraping|crawling|data\s+acquisition|scraper|crawler|anti[-\s]?bot|data\s+extraction|reverse\s+engineering|security\s+researcher|browser\s+automation|web\s+automation|web\s+scraping|web\s+crawling|bot\s+detection|bot\s+mitigation|browser\s+fingerprinting|web\s+security|reverse\s+engineer)\b`,
+		`(?i)\b(scraping|crawling|data\s+acquisition|data\s+collection|scraper|crawler|anti[-\s]?bot|bot[-\s]?(?:detection|mitigation|protection)|data\s+extraction|reverse\s+engineering|security\s+researcher|browser\s+automation|web\s+automation|web\s+scraping|web\s+crawling|bot\s+detection|bot\s+mitigation|browser\s+fingerprinting|web\s+security|reverse\s+engineer)\b`,
 	)
 
 	return pattern.FindString(text)
@@ -178,9 +185,8 @@ func DecodeJSONP(content []byte, target interface{}) error {
 	return json.Unmarshal([]byte(text[start:end+1]), target)
 }
 
-func FromTimestampToISOFormat(tsMs int64) string {
-	t := time.Unix(0, tsMs*int64(time.Millisecond)).UTC()
-	return t.Format(time.RFC3339)
+func FromTimestampToTime(tsMs int64) time.Time {
+	return time.Unix(0, tsMs*int64(time.Millisecond)).UTC()
 }
 func RandomImpersonation() string {
 	return constants.ImpersonateList[rand.Intn(len(constants.ImpersonateList))]
@@ -207,4 +213,10 @@ func UpdateLastScraped() error {
 	}
 
 	return os.WriteFile(constants.LastScrapedFile, jsonData, 0644)
+}
+
+func Slugify(value string) string {
+	value = strings.ToLower(value)
+	value = strings.ReplaceAll(value, " ", "_")
+	return value
 }

@@ -3622,7 +3622,7 @@ type SimplyHiredJob struct {
 				BotURL                 string   `json:"botUrl"`
 				Location               string   `json:"location"`
 				Company                string   `json:"company"`
-				CompanyRating          int      `json:"companyRating"`
+				CompanyRating          float64      `json:"companyRating"`
 				SalaryInfo             string   `json:"salaryInfo"`
 				IndeedApply            bool     `json:"indeedApply"`
 				DateOnIndeed           int64    `json:"dateOnIndeed"`

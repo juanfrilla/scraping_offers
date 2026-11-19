@@ -39,7 +39,6 @@ func (rrs *RemoteRocketshipScraper) Name() string {
 func (rrs *RemoteRocketshipScraper) getJobsRequest() (*client.Response, error) {
 	ctx := context.Background()
 	url := "https://www.remoterocketship.com/remote-jobs/?page=1&sort=DateAdded&jobTitle=scraping%2Ccrawling%2Cscraper%2Ccrawler%2Cdata%2520acquisition&locations=Europe%2CSpain"
-
 	return rrs.Session.Get(ctx, url, nil)
 
 }
@@ -122,11 +121,12 @@ func (rrs *RemoteRocketshipScraper) parse(responseJSON *RemoteRockJobList) ([]mo
 			Company:         company,
 			Location:        location,
 			URL:             job.URL,
-			DatePosted:      utils.FromTimestampToISOFormat(datePosted.UnixMilli()),
+			DatePosted:      datePosted,
 			Modality:        "Remote",
 			Platform:        rrs.ScraperName,
 			KeywordAppeared: keyword,
 			LogoURL:         companyImageURL,
+			ExternalID:      utils.Slugify(company + ":" + string(job.ID)),
 		}
 
 		records = append(records, record)

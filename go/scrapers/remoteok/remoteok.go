@@ -9,6 +9,7 @@ import (
 	"scraping_offers/go/models"
 	"scraping_offers/go/utils"
 	"strings"
+	"time"
 
 	"github.com/PuerkitoBio/goquery"
 	http "github.com/bogdanfinn/fhttp"
@@ -106,7 +107,11 @@ func (ro *RemoteOKScraper) parse(doc *goquery.Document) ([]models.ScrapedJob, er
 		}
 
 		company := singleJob.HiringOrg.Name
-		datePosted := singleJob.DatePosted
+		datePosted, err := time.Parse("02/01/2006", singleJob.DatePosted)
+		if err != nil {
+			ro.Logger.Printf("Error parsing date %q: %v", singleJob.DatePosted, err)
+			return true
+		}
 		modality := "REMOTE"
 
 		locs := make([]string, 0, len(singleJob.LocationReqs))
@@ -122,9 +127,11 @@ func (ro *RemoteOKScraper) parse(doc *goquery.Document) ([]models.ScrapedJob, er
 			!utils.IsForbidden(company, constants.ForbiddenCompanies) &&
 			!utils.IsForbidden(title, constants.ForbiddenKeywords) {
 
+			companyStr := utils.NormalizeString(company)
+
 			records = append(records, models.ScrapedJob{
 				Title:           title,
-				Company:         utils.NormalizeString(company),
+				Company:         companyStr,
 				Location:        location,
 				URL:             "https://www.remoteok.com" + botURL,
 				DatePosted:      datePosted,
@@ -132,6 +139,7 @@ func (ro *RemoteOKScraper) parse(doc *goquery.Document) ([]models.ScrapedJob, er
 				Platform:        ro.ScraperName,
 				KeywordAppeared: keyword,
 				LogoURL:         singleJob.Image,
+				ExternalID:      utils.Slugify(companyStr + ":" + dataID),
 			})
 		}
 

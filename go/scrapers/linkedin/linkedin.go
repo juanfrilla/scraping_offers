@@ -49,12 +49,12 @@ func (ls *LinkedinScraper) Name() string {
 func (ls *LinkedinScraper) Scrape() ([]models.ScrapedJob, error) {
 	urls, err := ls.retrieveOffers()
 	if err != nil {
-		return nil, fmt.Errorf("Error retrieving offers")
+		return nil, fmt.Errorf("Error retrieving offers: %w", err)
 	}
 
 	jobs, err := ls.parse(urls)
 	if err != nil {
-		return nil, fmt.Errorf("Error parsing urls", err)
+		return nil, fmt.Errorf("Error parsing urls: %w", err)
 
 	}
 	return jobs, nil
@@ -181,7 +181,7 @@ func (ls *LinkedinScraper) makeRequest(urlStr string, maxRetries int) (*client.R
 func (ls *LinkedinScraper) parse(urls []string) ([]models.ScrapedJob, error) {
 	var records []models.ScrapedJob
 	externalIDs := make(map[string]struct{})
-	todayStr := time.Now().Format("2006-01-02")
+	datePosted := time.Now()
 
 	for i, urlStr := range urls {
 		ls.Logger.Printf("Parsing job posting %d/%d", i+1, len(urls))
@@ -228,11 +228,12 @@ func (ls *LinkedinScraper) parse(urls []string) ([]models.ScrapedJob, error) {
 						Company:         utils.NormalizeString(company),
 						Location:        determinedLocation,
 						URL:             urlStr,
-						DatePosted:      utils.FromTimestampToISOFormat(datePostedStr.UnixMilli()),
+						DatePosted:      datePostedStr,
 						Modality:        modality,
 						Platform:        ls.ScraperName,
 						KeywordAppeared: keywordAppeared,
 						LogoURL:         logoURL,
+						ExternalID:      utils.Slugify(urlStr),
 					})
 				}
 			} else {
@@ -243,21 +244,19 @@ func (ls *LinkedinScraper) parse(urls []string) ([]models.ScrapedJob, error) {
 		} else {
 			rawTitle := doc.Find("h1.topcard__title").First()
 			title := ls.getText(rawTitle)
-
 			rawCompany := doc.Find("a.topcard__org-name-link").First()
 			company := ls.getText(rawCompany)
-
 			rawLocation := doc.Find("span.topcard__flavor--bullet").First()
 			location := ls.getText(rawLocation)
-
 			rawDate := doc.Find("time").First()
-			datePostedStr := todayStr + "T00:00:00Z"
 			if rawDate.Length() > 0 {
 				if dt, ok := rawDate.Attr("datetime"); ok {
-					datePostedStr = strings.TrimSpace(dt) + "T00:00:00Z"
+					datePosted, err = time.Parse("2006-01-02", strings.TrimSpace(dt))
 				}
 			} else {
+
 				ls.Logger.Printf("Erroneous date or not found for %s", urlStr)
+
 			}
 
 			rawLogo := doc.Find("img.artdeco-entity-image").First()
@@ -285,11 +284,12 @@ func (ls *LinkedinScraper) parse(urls []string) ([]models.ScrapedJob, error) {
 						Company:         utils.NormalizeString(company),
 						Location:        determinedLocation,
 						URL:             urlStr,
-						DatePosted:      datePostedStr,
+						DatePosted:      datePosted,
 						Modality:        modality,
 						Platform:        ls.ScraperName,
 						KeywordAppeared: keywordAppeared,
 						LogoURL:         logoURL,
+						ExternalID:      utils.Slugify(urlStr),
 					})
 				}
 			} else {

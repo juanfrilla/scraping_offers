@@ -5,7 +5,8 @@ import "path/filepath"
 var ForbiddenKeywords = []string{
 	"account",
 	"ai",
-	"analytics",
+	//"analytics",
+	"automotive",
 	"architect",
 	"artificial intelligence",
 	"bi",
@@ -30,11 +31,14 @@ var ForbiddenKeywords = []string{
 	"executive",
 	"field",
 	"finance",
+	"financial",
 	"founder",
 	"full stack",
 	"full-stack",
 	"fullstack",
+	"growth",
 	"gtm",
+	"graphics",
 	"hardware",
 	"head",
 	"human resources",
@@ -50,6 +54,7 @@ var ForbiddenKeywords = []string{
 	"nuclear",
 	"operation",
 	"operator",
+	"plasma",
 	"principal",
 	"product",
 	"propulsion",
@@ -71,15 +76,12 @@ var ForbiddenKeywords = []string{
 	"supply",
 	"system",
 	"talent",
+	"tax",
 	"technician",
 	"technisian",
 	"test",
 	"thermal",
 	"veterinarian",
-	"growth",
-	"tax",
-	"plasma",
-	"financial",
 	//"analyst",
 }
 
@@ -145,9 +147,10 @@ var ImpersonateList = []string{
 }
 
 var (
-	BaseDir, _ = filepath.Abs(".")
+	BaseDir, _ = filepath.Abs("..")
 
 	LogDir          = filepath.Join(BaseDir, "logs")
 	DataFile        = filepath.Join(BaseDir, "data", "jobs.json")
 	LastScrapedFile = filepath.Join(BaseDir, "data", "last_scraped.json")
+	EnvFile         = filepath.Join(BaseDir, ".env")
 )

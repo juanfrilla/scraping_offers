@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"net/url"
 	"os"
 	"scraping_offers/go/constants"
 	"scraping_offers/go/models"
@@ -39,7 +40,10 @@ func (shs *SimplyHiredScraper) Name() string {
 
 func (shs *SimplyHiredScraper) getJobsRequest(keyword string) (*client.Response, error) {
 	ctx := context.Background()
-	url := fmt.Sprintf("https://www.simplyhired.es/search?q=%s&l=espa%C3%B1a", keyword)
+	url := fmt.Sprintf(
+		"https://www.simplyhired.es/search?q=%s&l=espa%%C3%%B1a",
+		url.QueryEscape(keyword),
+	)
 	body := strings.NewReader("")
 
 	resp, err := shs.Session.Post(ctx, url, body, nil)
@@ -98,8 +102,13 @@ func (shs *SimplyHiredScraper) Parse(jobsData SimplyHiredJobList, seenURLs map[s
 			log.Fatal("error parsing job HTML: %w", err)
 		}
 
+		if strings.ToLower(company) == "bright data" {
+			utils.SaveDebugHTML("simplyhired", fmt.Sprintf("job_%d", i), string(bodyBytes))
+		}
+
 		singleJobPtr, err := utils.GetJSONFromHTML[SimplyHiredJob](doc)
 		if err != nil {
+			utils.SaveDebugHTML("simplyhired", fmt.Sprintf("job_%d", i), string(bodyBytes))
 			shs.Logger.Printf("Error extracting job JSON: %v", err)
 			continue
 		}
@@ -116,7 +125,7 @@ func (shs *SimplyHiredScraper) Parse(jobsData SimplyHiredJobList, seenURLs map[s
 		keyword := utils.FindKeywordInDescription(description)
 
 		if keyword == "" {
-			shs.Logger.Printf("Discarding title %s from company %s", title, company)
+			shs.Logger.Printf("Discarding offer %s from company %s", title, company)
 			continue
 		}
 
@@ -125,11 +134,12 @@ func (shs *SimplyHiredScraper) Parse(jobsData SimplyHiredJobList, seenURLs map[s
 			Company:         company,
 			Location:        j.Location,
 			URL:             "https://www.simplyhired.es" + botURL,
-			DatePosted:      utils.FromTimestampToISOFormat(j.DateOnIndeed),
+			DatePosted:      utils.FromTimestampToTime(j.DateOnIndeed),
 			Modality:        utils.DetermineModality(title, description),
 			Platform:        shs.ScraperName,
 			KeywordAppeared: keyword,
 			LogoURL:         jobInfoPageProps.EmployerSquareLogoURL,
+			ExternalID:      utils.Slugify(company + ":" + j.JobKey),
 		}
 
 		records = append(records, record)

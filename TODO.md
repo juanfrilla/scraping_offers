@@ -8,3 +8,5 @@
 # grafana gratis
 # supabase para api y postgresql 
 # quitar streamlit y poner front-end en gh pages o cloudflare pages
+
+# poner las carpetas que se crean en las constantes

@@ -10,11 +10,14 @@ import (
 	"scraping_offers/go/scrapers/empleate"
 	"scraping_offers/go/scrapers/infojobs"
 	"scraping_offers/go/scrapers/linkedin"
+	"scraping_offers/go/scrapers/remoteok"
 	"scraping_offers/go/scrapers/remoterocketship"
 	"scraping_offers/go/scrapers/simplyhired"
 	"scraping_offers/go/utils"
 
 	"sync"
+
+	"github.com/joho/godotenv"
 )
 
 type Scraper interface {
@@ -23,6 +26,12 @@ type Scraper interface {
 }
 
 func main() {
+	if err := godotenv.Load(constants.EnvFile); err != nil {
+		fmt.Println("No .env file found")
+	}
+
+	//TODO estas carpetas ponerlas en constants
+
 	os.MkdirAll("data", 0755)
 	os.MkdirAll("debug", 0755)
 	scrapers := []Scraper{
@@ -30,6 +39,7 @@ func main() {
 		infojobs.NewInfojobsScraper(),
 		ashby.NewAshbyScraper(),
 		remoterocketship.NewRemoteRocketshipScraper(),
+		remoteok.NewRemoteOKScraper(),
 		empleate.NewEmpleateScraper(),
 	}
 

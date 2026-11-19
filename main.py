@@ -1,5 +1,4 @@
 import os
-import subprocess
 import threading
 from datetime import UTC, date, datetime
 
@@ -8,68 +7,9 @@ from dateutil.parser import isoparse
 from dotenv import load_dotenv
 
 from py.constants import DATA_FILE, LOG_DIR
-from py.logger import get_logger
 from py.utils import last_scraped_today, read_json
 
 load_dotenv()
-
-
-def run_go_scraper() -> tuple[bool, str]:
-    ENV = os.getenv("ENV", "prod")
-    logger = get_logger("main")
-    env = os.environ.copy()
-    command = (
-        ["go", "run", "./go/main.go"] if ENV == "local" else ["./go/bin/scraper_go"]
-    )
-    logger.info(f"Executing {command}")
-
-    try:
-        process = subprocess.Popen(
-            command,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            text=True,
-            bufsize=1,
-            env=env,
-        )
-
-        logs = []
-        err_logs = []
-
-        def read_stdout():
-            for line in process.stdout:
-                line = line.rstrip()
-                logs.append(line)
-                logger.info(f"[GO] {line}")
-
-        def read_stderr():
-            for line in process.stderr:
-                line = line.rstrip()
-                err_logs.append(line)
-                logger.error(f"[GO-ERR] {line}")
-
-        t1 = threading.Thread(target=read_stdout)
-        t2 = threading.Thread(target=read_stderr)
-
-        t1.start()
-        t2.start()
-
-        process.wait()
-
-        t1.join()
-        t2.join()
-
-        if process.returncode != 0:
-            return False, "\n".join(err_logs) or "\n".join(logs)
-
-        return True, "\n".join(logs)
-
-    except subprocess.TimeoutExpired:
-        process.kill()
-        return False, "Timeout: scraper tardó más de 120s."
-
-    except FileNotFoundError:
-        return False, "Binary './scraper_go' not found."
 
 
 @st.cache_resource

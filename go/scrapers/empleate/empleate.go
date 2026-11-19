@@ -8,6 +8,7 @@ import (
 	"scraping_offers/go/constants"
 	"scraping_offers/go/models"
 	"scraping_offers/go/utils"
+	"time"
 
 	fhttp "github.com/bogdanfinn/fhttp"
 	tls_client "github.com/bogdanfinn/tls-client"
@@ -62,9 +63,12 @@ func (es *EmpleateScraper) Parse(jsonData EmpleateJobList) []models.ScrapedJob {
 		es.Logger.Printf("Processing offer %d/%d", i+1, len(docs))
 		title := item.Titulo
 		company := item.Contacto
+		if company == "" {
+			company = item.Origen
+		}
 		description := item.Contenido
 		url := item.URL
-		datePosted := item.FechaCreacionPortal
+		datePosted, _ := time.Parse(time.RFC3339, item.FechaCreacionPortal)
 		platform := item.Entitytype
 		location := item.ProvinciaF
 		keyword := utils.FindKeywordInDescription(description)
@@ -85,6 +89,7 @@ func (es *EmpleateScraper) Parse(jsonData EmpleateJobList) []models.ScrapedJob {
 			Platform:        platform,
 			KeywordAppeared: keyword,
 			LogoURL:         "",
+			ExternalID:      utils.Slugify(company + ":" + item.ID),
 		}
 
 		records = append(records, record)

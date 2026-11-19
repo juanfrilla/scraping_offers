@@ -221,11 +221,12 @@ func (s *AshbyScraper) Scrape() ([]models.ScrapedJob, error) {
 						Company:         companyStr,
 						Location:        location,
 						URL:             job.JobURL,
-						DatePosted:      utils.FromTimestampToISOFormat(job.PublishedAt.UnixMilli()),
+						DatePosted:      job.PublishedAt,
 						Modality:        modality,
 						Platform:        "Ashby",
 						KeywordAppeared: keyword,
 						LogoURL:         "",
+						ExternalID:      slug + ":" + job.ID,
 					},
 				)
 			}

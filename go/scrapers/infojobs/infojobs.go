@@ -96,11 +96,12 @@ func (ijs *InfojobsScraper) Scrape() ([]models.ScrapedJob, error) {
 				Company:         company,
 				Location:        offer.City,
 				URL:             offer.Link,
-				DatePosted:      utils.FromTimestampToISOFormat(offer.PublishedAt.UnixMilli()),
+				DatePosted:      offer.PublishedAt,
 				Modality:        utils.DetermineModality(offer.Title, offer.Description),
 				Platform:        ijs.ScraperName,
 				KeywordAppeared: kw,
 				LogoURL:         offer.CompanyLogo,
+				ExternalID:      utils.Slugify(company + ":" + offer.Code),
 			}
 
 			records = append(records, job)
