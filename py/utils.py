@@ -33,12 +33,5 @@ def last_scraped_today() -> bool:
     return last_date == str(date.today())
 
 
-def update_last_scraped() -> None:
-    data = {"date": str(date.today())}
-
-    with open(LAST_SCRAPED_FILE, "w") as f:
-        json.dump(data, f, indent=2)
-
-
 def normalize_string(s: str) -> str:
     return s.title().strip()

@@ -195,3 +195,16 @@ func SaveDebugHTML(prefix, id, html string) {
 	filename := fmt.Sprintf("%s/%s_%s_%s.html", "debug", prefix, timestamp, id)
 	os.WriteFile(filename, []byte(html), 0644)
 }
+
+func UpdateLastScraped() error {
+	data := map[string]string{
+		"date": time.Now().Format("2006-01-02"),
+	}
+
+	jsonData, err := json.MarshalIndent(data, "", "  ")
+	if err != nil {
+		return err
+	}
+
+	return os.WriteFile(constants.LastScrapedFile, jsonData, 0644)
+}

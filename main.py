@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 
 from py.constants import DATA_FILE, LOG_DIR
 from py.logger import get_logger
-from py.utils import last_scraped_today, read_json, update_last_scraped
+from py.utils import last_scraped_today, read_json
 
 load_dotenv()
 
@@ -84,6 +84,7 @@ def get_jobs_data() -> list:
         return read_json(DATA_FILE)
 
     return []
+
 
 os.makedirs(LOG_DIR, exist_ok=True)
 

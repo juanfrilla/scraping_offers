@@ -1,6 +1,6 @@
 package constants
 
-const DataFile = "./data/jobs.json"
+import "path/filepath"
 
 var ForbiddenKeywords = []string{
 	"account",
@@ -106,7 +106,7 @@ var ForbiddenCompanies = []string{
 }
 
 var ForbiddenCountries = []string{
-	"india", "philippines","brazil", "argentina",
+	"india", "philippines", "brazil", "argentina",
 }
 
 var JsonTypes = []string{"application/json", "application/ld+json"}
@@ -143,3 +143,11 @@ var ImpersonateList = []string{
 	"firefox-133",
 	"firefox-148",
 }
+
+var (
+	BaseDir, _ = filepath.Abs(".")
+
+	LogDir          = filepath.Join(BaseDir, "logs")
+	DataFile        = filepath.Join(BaseDir, "data", "jobs.json")
+	LastScrapedFile = filepath.Join(BaseDir, "data", "last_scraped.json")
+)

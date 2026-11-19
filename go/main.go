@@ -93,5 +93,10 @@ func main() {
 		os.Exit(1)
 	}
 
+	err = utils.UpdateLastScraped()
+	if err != nil {
+		fmt.Println("Error updating last scraped:", err)
+		os.Exit(1)
+	}
 	fmt.Printf("✅ Exported %d jobs to %s\n", len(allJobs), constants.DataFile)
 }
