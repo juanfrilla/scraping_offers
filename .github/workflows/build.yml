@@ -63,6 +63,25 @@ jobs:
         if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
         run: ./go/bin/scraper_go
 
+      
+      - name: Debug file paths
+        run: |
+          echo "Working directory:"
+          pwd
+
+          echo "Repository root:"
+          git rev-parse --show-toplevel
+
+          echo "Current directory:"
+          ls -la
+
+          echo "Parent directory:"
+          ls -la ..
+
+          echo "Data directory:"
+          ls -la data/ || true
+          ls -la ../data/ || true
+
       # -------------------------
       # COMMIT RESULTS
       # -------------------------
