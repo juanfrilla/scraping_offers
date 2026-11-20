@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"os"
 	"scraping_offers/go/constants"
+	"scraping_offers/go/db"
 	"scraping_offers/go/models"
-	"scraping_offers/go/scrapers/ashby"
 	"scraping_offers/go/scrapers/empleate"
 	"scraping_offers/go/scrapers/infojobs"
 	"scraping_offers/go/scrapers/linkedin"
@@ -31,13 +31,19 @@ func main() {
 	}
 
 	//TODO estas carpetas ponerlas en constants
+	database, err := db.InitDB(constants.DataDB)
+	if err != nil {
+		fmt.Println("Error initializing database:", err)
+		os.Exit(1)
+	}
+	defer database.Close()
 
 	os.MkdirAll("data", 0755)
 	os.MkdirAll("debug", 0755)
 	scrapers := []Scraper{
 		linkedin.NewLinkedinScraper(),
 		infojobs.NewInfojobsScraper(),
-		ashby.NewAshbyScraper(),
+		//		ashby.NewAshbyScraper(),
 		remoterocketship.NewRemoteRocketshipScraper(),
 		remoteok.NewRemoteOKScraper(),
 		empleate.NewEmpleateScraper(),
@@ -83,6 +89,17 @@ func main() {
 
 	for err := range errorsChan {
 		fmt.Println("❌ Error in scraper:", err)
+	}
+
+	fmt.Println("Working directory:")
+	wd, _ := os.Getwd()
+	fmt.Println(wd)
+
+	fmt.Println("DataFile:", constants.DataFile)
+
+	if err := os.MkdirAll("data", 0755); err != nil {
+		fmt.Println("Error creating data directory:", err)
+		return
 	}
 
 	file, err := os.Create(constants.DataFile)

@@ -151,6 +151,7 @@ var (
 
 	LogDir          = filepath.Join(BaseDir, "logs")
 	DataFile        = filepath.Join(BaseDir, "data", "jobs.json")
+	DataDB          = filepath.Join(BaseDir, "data", "jobs.db")
 	LastScrapedFile = filepath.Join(BaseDir, "data", "last_scraped.json")
 	EnvFile         = filepath.Join(BaseDir, ".env")
 )
