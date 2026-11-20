@@ -61,7 +61,8 @@ jobs:
       # -------------------------
       - name: Run Go scraper
         if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
-        run: ./go/bin/scraper_go
+        working-directory: ./go
+        run: ./bin/scraper_go
 
       
       - name: Debug file paths
