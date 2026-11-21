@@ -7,7 +7,13 @@ import (
 	"scraping_offers/go/constants"
 	"scraping_offers/go/db"
 	"scraping_offers/go/models"
+	"scraping_offers/go/scrapers/ashby"
+	"scraping_offers/go/scrapers/empleate"
+	"scraping_offers/go/scrapers/infojobs"
+	"scraping_offers/go/scrapers/linkedin"
+	"scraping_offers/go/scrapers/remoteok"
 	"scraping_offers/go/scrapers/remoterocketship"
+	"scraping_offers/go/scrapers/simplyhired"
 	"scraping_offers/go/utils"
 
 	"sync"
@@ -40,16 +46,16 @@ func main() {
 	os.MkdirAll("data", 0755)
 	os.MkdirAll("debug", 0755)
 	scrapers := []Scraper{
-		// linkedin.NewLinkedinScraper(),
-		// infojobs.NewInfojobsScraper(),
-		// ashby.NewAshbyScraper(),
+		linkedin.NewLinkedinScraper(),
+		infojobs.NewInfojobsScraper(),
+		ashby.NewAshbyScraper(),
 		remoterocketship.NewRemoteRocketshipScraper(),
-		// remoteok.NewRemoteOKScraper(),
-		// empleate.NewEmpleateScraper(),
+		remoteok.NewRemoteOKScraper(),
+		empleate.NewEmpleateScraper(),
 	}
 
 	if utils.IsLocal() {
-		//scrapers = append(scrapers, simplyhired.NewSimplyHiredScraper())
+		scrapers = append(scrapers, simplyhired.NewSimplyHiredScraper())
 	}
 
 	resultsChan := make(chan []models.ScrapedJob, len(scrapers))
