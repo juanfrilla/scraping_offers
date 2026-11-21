@@ -102,11 +102,10 @@ func IsForbidden(target string, forbiddens []string) bool {
 }
 
 func FindKeywordInDescription(text string) string {
-	pattern := regexp.MustCompile(
-		`(?i)\b(scraping|crawling|data\s+acquisition|data\s+collection|scraper|crawler|anti[-\s]?bot|bot[-\s]?(?:detection|mitigation|protection)|data\s+extraction|reverse\s+engineering|security\s+researcher|browser\s+automation|web\s+automation|web\s+scraping|web\s+crawling|bot\s+detection|bot\s+mitigation|browser\s+fingerprinting|web\s+security|reverse\s+engineer)\b`,
+	var keywordPattern = regexp.MustCompile(
+		`(?i)\b(scraping|crawling|selenium|playwright|puppeteer|fingerprint(?:ing)|captchas?|scrapers?|crawlers?|anti[-\s]bot|browser\s+automation|web\s+automation|web\s+scraping|web\s+crawling)\b`,
 	)
-
-	return pattern.FindString(text)
+	return keywordPattern.FindString(text)
 }
 
 func GetJSONFromHTML[T any](node HTMLNode) (*T, error) {

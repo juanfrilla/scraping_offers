@@ -10,3 +10,6 @@
 # quitar streamlit y poner front-end en gh pages o cloudflare pages
 
 # poner las carpetas que se crean en las constantes
+
+
+# arreglar formatos de fecha para insertar en la bbdd

@@ -64,25 +64,6 @@ jobs:
         working-directory: ./go
         run: ./bin/scraper_go
 
-      
-      - name: Debug file paths
-        run: |
-          echo "Working directory:"
-          pwd
-
-          echo "Repository root:"
-          git rev-parse --show-toplevel
-
-          echo "Current directory:"
-          ls -la
-
-          echo "Parent directory:"
-          ls -la ..
-
-          echo "Data directory:"
-          ls -la data/ || true
-          ls -la ../data/ || true
-
       # -------------------------
       # COMMIT RESULTS
       # -------------------------
@@ -93,7 +74,6 @@ jobs:
           git config --local user.name "github-actions[bot]"
 
           git add -f go/bin/scraper_go
-          git add -f data/jobs.json
           git add -f data/last_scraped.json
 
           if git diff --staged --quiet; then

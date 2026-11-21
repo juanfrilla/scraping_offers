@@ -3,9 +3,8 @@ package db
 import (
 	"database/sql"
 	"fmt"
-	"strings"
-
 	"scraping_offers/go/models"
+	"strings"
 )
 
 func SaveJobs(database *sql.DB, jobs []models.ScrapedJob) error {
@@ -14,34 +13,36 @@ func SaveJobs(database *sql.DB, jobs []models.ScrapedJob) error {
 	}
 
 	query := `
-		INSERT INTO jobs (
-			title,
-			company,
-			location,
-			url,
-			date_posted,
-			modality,
-			platform,
-			keyword_appeared,
-			logo_url
-		)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO jobs (
+        title,
+        company,
+        location,
+        url,
+        date_posted,
+        modality,
+        platform,
+        keyword_appeared,
+        logo_url,
+        external_id
+    )
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 
-		ON CONFLICT(platform, url) DO UPDATE SET
-			title = excluded.title,
-			company = excluded.company,
-			location = excluded.location,
-			date_posted = excluded.date_posted,
-			modality = excluded.modality,
-			keyword_appeared = excluded.keyword_appeared,
-			logo_url = excluded.logo_url;
-	`
+    ON CONFLICT(platform, external_id) DO UPDATE SET
+        title = excluded.title,
+        company = excluded.company,
+        location = excluded.location,
+        url = excluded.url,
+        date_posted = excluded.date_posted,
+        modality = excluded.modality,
+        keyword_appeared = excluded.keyword_appeared,
+        logo_url = excluded.logo_url,
+        updated_at = CURRENT_TIMESTAMP;
+`
 
 	tx, err := database.Begin()
 	if err != nil {
 		return fmt.Errorf("starting transaction: %w", err)
 	}
-
 	defer tx.Rollback()
 
 	stmt, err := tx.Prepare(query)
@@ -59,16 +60,27 @@ func SaveJobs(database *sql.DB, jobs []models.ScrapedJob) error {
 			return fmt.Errorf("job at index %d has an empty platform", i)
 		}
 
+		if strings.TrimSpace(job.ExternalID) == "" {
+			return fmt.Errorf("job at index %d has an empty external ID", i)
+		}
+
+		var datePosted any
+
+		if !job.DatePosted.IsZero() {
+			datePosted = job.DatePosted.UTC().Unix()
+		}
+
 		_, err := stmt.Exec(
 			job.Title,
 			job.Company,
 			job.Location,
 			job.URL,
-			job.DatePosted,
+			datePosted,
 			job.Modality,
 			job.Platform,
 			job.KeywordAppeared,
 			job.LogoURL,
+			job.ExternalID,
 		)
 
 		if err != nil {
@@ -81,57 +93,4 @@ func SaveJobs(database *sql.DB, jobs []models.ScrapedJob) error {
 	}
 
 	return nil
-}
-
-func GetJobs(database *sql.DB) ([]models.ScrapedJob, error) {
-	query := `
-		SELECT
-			title,
-			company,
-			location,
-			url,
-			date_posted,
-			modality,
-			platform,
-			keyword_appeared,
-			logo_url
-		FROM jobs
-		ORDER BY date_posted DESC;
-	`
-
-	rows, err := database.Query(query)
-	if err != nil {
-		return nil, fmt.Errorf("querying jobs: %w", err)
-	}
-	defer rows.Close()
-
-	var jobs []models.ScrapedJob
-
-	for rows.Next() {
-		var job models.ScrapedJob
-
-		err := rows.Scan(
-			&job.Title,
-			&job.Company,
-			&job.Location,
-			&job.URL,
-			&job.DatePosted,
-			&job.Modality,
-			&job.Platform,
-			&job.KeywordAppeared,
-			&job.LogoURL,
-		)
-
-		if err != nil {
-			return nil, fmt.Errorf("scanning job: %w", err)
-		}
-
-		jobs = append(jobs, job)
-	}
-
-	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("iterating jobs: %w", err)
-	}
-
-	return jobs, nil
 }

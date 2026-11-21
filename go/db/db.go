@@ -14,6 +14,20 @@ func InitDB(path string) (*sql.DB, error) {
 		return nil, fmt.Errorf("database path cannot be empty")
 	}
 
+	absPath, err := filepath.Abs(path)
+	if err != nil {
+		return nil, fmt.Errorf("getting absolute database path: %w", err)
+	}
+
+	workingDir, err := os.Getwd()
+	if err != nil {
+		return nil, fmt.Errorf("getting working directory: %w", err)
+	}
+
+	fmt.Println("Working directory:", workingDir)
+	fmt.Println("Database path:", path)
+	fmt.Println("Database absolute path:", absPath)
+
 	if err := os.MkdirAll(filepath.Dir(path), 0755); err != nil {
 		return nil, fmt.Errorf("creating database directory: %w", err)
 	}
@@ -22,8 +36,6 @@ func InitDB(path string) (*sql.DB, error) {
 	if err != nil {
 		return nil, fmt.Errorf("opening database: %w", err)
 	}
-
-	// SQLite admite un único escritor simultáneo.
 	database.SetMaxOpenConns(1)
 	database.SetMaxIdleConns(1)
 

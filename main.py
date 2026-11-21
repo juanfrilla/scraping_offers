@@ -3,11 +3,11 @@ import threading
 from datetime import UTC, date, datetime
 
 import streamlit as st
-from dateutil.parser import isoparse
 from dotenv import load_dotenv
 
-from py.constants import DATA_FILE, LOG_DIR
-from py.utils import last_scraped_today, read_json
+from py.constants import DATABASE_FILE, LOG_DIR
+from py.db import get_jobs
+from py.utils import last_scraped_today
 
 load_dotenv()
 
@@ -20,8 +20,8 @@ def get_scraper_lock():
 @st.cache_data(ttl=86400, show_spinner=False)
 def get_jobs_data() -> list:
     """Obtiene los jobs directamente del JSON del repositorio."""
-    if last_scraped_today() and os.path.exists(DATA_FILE):
-        return read_json(DATA_FILE)
+    if last_scraped_today() and os.path.exists(DATABASE_FILE):
+        return get_jobs(DATABASE_FILE)
 
     return []
 
@@ -65,7 +65,9 @@ modalities = sorted(list({j.get("modality", "N/A") for j in jobs_after_location}
 selected_modality = st.sidebar.selectbox("Modality", ["All"] + modalities)
 
 job_dates = [
-    isoparse(job["date_posted"]).date() for job in jobs if job.get("date_posted")
+    datetime.fromtimestamp(job["date_posted"]).date()
+    for job in jobs
+    if job.get("date_posted")
 ]
 
 min_date = min(job_dates) if job_dates else date.today()
@@ -90,13 +92,13 @@ filtered_jobs = [
     if (selected_modality == "All" or job.get("modality") == selected_modality)
     and (
         (not start_date or not end_date)
-        or (start_date <= isoparse(job["date_posted"]).date() <= end_date)
+        or (start_date <= datetime.fromtimestamp(job["date_posted"]).date() <= end_date)
     )
 ]
 
 sorted_jobs_by_datetime = sorted(
     filtered_jobs,
-    key=lambda x: isoparse(x["date_posted"]),
+    key=lambda x: datetime.fromtimestamp(x["date_posted"]),
     reverse=True,
 )
 
@@ -111,10 +113,10 @@ for job in sorted_jobs_by_datetime:
     date_posted = "N/A"
 
     if raw_date:
-        posted_dt = isoparse(raw_date)
+        posted_dt = datetime.fromtimestamp(int(raw_date), tz=UTC)
         now = datetime.now(UTC)
 
-        is_new = (now - posted_dt).days < 3
+        is_new = 0 <= (now - posted_dt).total_seconds() < 3 * 24 * 60 * 60
         date_posted = posted_dt.strftime("%d/%m/%Y")
 
     with st.container():

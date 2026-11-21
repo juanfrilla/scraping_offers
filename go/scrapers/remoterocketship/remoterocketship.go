@@ -9,6 +9,7 @@ import (
 	"scraping_offers/go/constants"
 	"scraping_offers/go/models"
 	"scraping_offers/go/utils"
+	"strconv"
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
@@ -38,7 +39,7 @@ func (rrs *RemoteRocketshipScraper) Name() string {
 }
 func (rrs *RemoteRocketshipScraper) getJobsRequest() (*client.Response, error) {
 	ctx := context.Background()
-	url := "https://www.remoterocketship.com/remote-jobs/?page=1&sort=DateAdded&jobTitle=scraping%2Ccrawling%2Cscraper%2Ccrawler%2Cdata%2520acquisition&locations=Europe%2CSpain"
+	url := "https://www.remoterocketship.com/remote-jobs/?page=1&sort=DateAdded&jobTitle=scraping%2Ccrawling%2Cscraper%2Ccrawler&locations=Europe%2CSpain"
 	return rrs.Session.Get(ctx, url, nil)
 
 }
@@ -73,6 +74,7 @@ func (rrs *RemoteRocketshipScraper) parse(responseJSON *RemoteRockJobList) ([]mo
 		}
 
 		var description string
+		var keyword string
 
 		if utils.IsLocal() {
 			resp, err := rrs.jobInformationRequest(jobURL)
@@ -102,19 +104,14 @@ func (rrs *RemoteRocketshipScraper) parse(responseJSON *RemoteRockJobList) ([]mo
 				jobOpening.RoleRequirements,
 				jobOpening.Benefits,
 			}, "\n")
+			keyword = utils.FindKeywordInDescription(description)
 		} else {
 			description = ""
+			keyword = ""
 		}
 		title := job.RoleTitle
 		location := job.Location
 		datePosted := job.CreatedAt
-		var keyword string
-		if utils.IsLocal() {
-
-			keyword = utils.FindKeywordInDescription(description)
-		} else {
-			keyword = ""
-		}
 
 		record := models.ScrapedJob{
 			Title:           title,
@@ -126,7 +123,7 @@ func (rrs *RemoteRocketshipScraper) parse(responseJSON *RemoteRockJobList) ([]mo
 			Platform:        rrs.ScraperName,
 			KeywordAppeared: keyword,
 			LogoURL:         companyImageURL,
-			ExternalID:      utils.Slugify(company + ":" + string(job.ID)),
+			ExternalID:      utils.Slugify(company + ":" + strconv.Itoa(job.ID)),
 		}
 
 		records = append(records, record)

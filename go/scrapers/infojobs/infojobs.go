@@ -62,14 +62,10 @@ func (ijs *InfojobsScraper) Scrape() ([]models.ScrapedJob, error) {
 			continue
 		}
 
-		resp.Body.Close() // Cerramos el body original ya que tenemos los datos en memoria
-		if err != nil {
-			return nil, fmt.Errorf("error reading response body: %w", err)
-		}
-
 		if err := json.NewDecoder(resp.Body).Decode(&rawData); err != nil {
 			panic(fmt.Errorf("error decodificando JSON: %w", err))
 		}
+		resp.Body.Close()
 		if err != nil {
 			return nil, fmt.Errorf("error parsing JSON from HTML: %w", err)
 		}

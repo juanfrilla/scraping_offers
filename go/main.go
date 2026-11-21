@@ -7,13 +7,7 @@ import (
 	"scraping_offers/go/constants"
 	"scraping_offers/go/db"
 	"scraping_offers/go/models"
-	"scraping_offers/go/scrapers/ashby"
-	"scraping_offers/go/scrapers/empleate"
-	"scraping_offers/go/scrapers/infojobs"
-	"scraping_offers/go/scrapers/linkedin"
-	"scraping_offers/go/scrapers/remoteok"
 	"scraping_offers/go/scrapers/remoterocketship"
-	"scraping_offers/go/scrapers/simplyhired"
 	"scraping_offers/go/utils"
 
 	"sync"
@@ -27,6 +21,10 @@ type Scraper interface {
 }
 
 func main() {
+	if err := constants.InitPaths(); err != nil {
+		fmt.Println("Error initializing paths:", err)
+		os.Exit(1)
+	}
 	if err := godotenv.Load(constants.EnvFile); err != nil {
 		fmt.Println("No .env file found")
 	}
@@ -42,16 +40,16 @@ func main() {
 	os.MkdirAll("data", 0755)
 	os.MkdirAll("debug", 0755)
 	scrapers := []Scraper{
-		linkedin.NewLinkedinScraper(),
-		infojobs.NewInfojobsScraper(),
-		ashby.NewAshbyScraper(),
+		// linkedin.NewLinkedinScraper(),
+		// infojobs.NewInfojobsScraper(),
+		// ashby.NewAshbyScraper(),
 		remoterocketship.NewRemoteRocketshipScraper(),
-		remoteok.NewRemoteOKScraper(),
-		empleate.NewEmpleateScraper(),
+		// remoteok.NewRemoteOKScraper(),
+		// empleate.NewEmpleateScraper(),
 	}
 
 	if utils.IsLocal() {
-		scrapers = append(scrapers, simplyhired.NewSimplyHiredScraper())
+		//scrapers = append(scrapers, simplyhired.NewSimplyHiredScraper())
 	}
 
 	resultsChan := make(chan []models.ScrapedJob, len(scrapers))
@@ -92,12 +90,6 @@ func main() {
 		fmt.Println("❌ Error in scraper:", err)
 	}
 
-	fmt.Println("Working directory:")
-	wd, _ := os.Getwd()
-	fmt.Println(wd)
-
-	fmt.Println("DataFile:", constants.DataFile)
-
 	if err := os.MkdirAll("data", 0755); err != nil {
 		fmt.Println("Error creating data directory:", err)
 		return
@@ -114,17 +106,42 @@ func main() {
 		allJobs = []models.ScrapedJob{}
 	}
 
+	if err := db.SaveJobs(database, allJobs); err != nil {
+		fmt.Println("Error saving jobs to database:", err)
+		os.Exit(1)
+	}
+
+	var count int
+	if err := database.QueryRow("SELECT COUNT(*) FROM jobs").Scan(&count); err != nil {
+		fmt.Println("Error checking jobs count:", err)
+		os.Exit(1)
+	}
+
+	fmt.Printf("✅ Saved %d jobs to SQLite\n", len(allJobs))
+	fmt.Printf("📊 Jobs actually in database: %d\n", count)
+
+	file, err = os.Create(constants.DataFile)
+	if err != nil {
+		fmt.Println("Error creating file:", err)
+		os.Exit(1)
+	}
+
 	encoder := json.NewEncoder(file)
 	encoder.SetIndent("", "  ")
+
 	if err := encoder.Encode(allJobs); err != nil {
+		file.Close()
 		fmt.Println("Error writing JSON:", err)
 		os.Exit(1)
 	}
 
-	err = utils.UpdateLastScraped()
-	if err != nil {
+	if err := file.Close(); err != nil {
+		fmt.Println("Error closing JSON file:", err)
+		os.Exit(1)
+	}
+
+	if err := utils.UpdateLastScraped(); err != nil {
 		fmt.Println("Error updating last scraped:", err)
 		os.Exit(1)
 	}
-	fmt.Printf("✅ Exported %d jobs to %s\n", len(allJobs), constants.DataFile)
 }

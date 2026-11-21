@@ -1,6 +1,10 @@
 package constants
 
-import "path/filepath"
+import (
+	"fmt"
+	"os"
+	"path/filepath"
+)
 
 var ForbiddenKeywords = []string{
 	"account",
@@ -49,6 +53,7 @@ var ForbiddenKeywords = []string{
 	"machine learning",
 	"manager",
 	"market",
+	"marketing",
 	"mecatronics",
 	"mechanical",
 	"nuclear",
@@ -147,11 +152,45 @@ var ImpersonateList = []string{
 }
 
 var (
-	BaseDir, _ = filepath.Abs("..")
-
-	LogDir          = filepath.Join(BaseDir, "logs")
-	DataFile        = filepath.Join(BaseDir, "data", "jobs.json")
-	DataDB          = filepath.Join(BaseDir, "data", "jobs.db")
-	LastScrapedFile = filepath.Join(BaseDir, "data", "last_scraped.json")
-	EnvFile         = filepath.Join(BaseDir, ".env")
+	BaseDir         string
+	LogDir          string
+	DataFile        string
+	DataDB          string
+	LastScrapedFile string
+	EnvFile         string
 )
+
+func InitPaths() error {
+	workingDir, err := os.Getwd()
+	if err != nil {
+		return fmt.Errorf("getting working directory: %w", err)
+	}
+
+	currentDir, err := filepath.Abs(workingDir)
+	if err != nil {
+		return fmt.Errorf("getting absolute path: %w", err)
+	}
+
+	for {
+		if _, err := os.Stat(filepath.Join(currentDir, "go.mod")); err == nil {
+			BaseDir = currentDir
+			break
+		}
+
+		parent := filepath.Dir(currentDir)
+
+		if parent == currentDir {
+			return fmt.Errorf("could not find go.mod starting from %s", workingDir)
+		}
+
+		currentDir = parent
+	}
+
+	LogDir = filepath.Join(BaseDir, "logs")
+	DataFile = filepath.Join(BaseDir, "data", "jobs.json")
+	DataDB = filepath.Join(BaseDir, "data", "jobs.db")
+	LastScrapedFile = filepath.Join(BaseDir, "data", "last_scraped.json")
+	EnvFile = filepath.Join(BaseDir, ".env")
+
+	return nil
+}
