@@ -7,12 +7,7 @@ import (
 	"scraping_offers/go/constants"
 	"scraping_offers/go/db"
 	"scraping_offers/go/models"
-	"scraping_offers/go/scrapers/ashby"
-	"scraping_offers/go/scrapers/empleate"
-	"scraping_offers/go/scrapers/infojobs"
 	"scraping_offers/go/scrapers/linkedin"
-	"scraping_offers/go/scrapers/remoteok"
-	"scraping_offers/go/scrapers/remoterocketship"
 	"scraping_offers/go/scrapers/simplyhired"
 	"scraping_offers/go/utils"
 
@@ -47,11 +42,11 @@ func main() {
 	os.MkdirAll("debug", 0755)
 	scrapers := []Scraper{
 		linkedin.NewLinkedinScraper(),
-		infojobs.NewInfojobsScraper(),
-		ashby.NewAshbyScraper(),
-		remoterocketship.NewRemoteRocketshipScraper(),
-		remoteok.NewRemoteOKScraper(),
-		empleate.NewEmpleateScraper(),
+		// infojobs.NewInfojobsScraper(),
+		// ashby.NewAshbyScraper(),
+		// remoterocketship.NewRemoteRocketshipScraper(),
+		// remoteok.NewRemoteOKScraper(),
+		// empleate.NewEmpleateScraper(),
 	}
 
 	if utils.IsLocal() {
