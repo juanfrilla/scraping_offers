@@ -34,7 +34,6 @@ func main() {
 		fmt.Println("No .env file found")
 	}
 
-	//TODO estas carpetas ponerlas en constants
 	database, err := db.InitDB(constants.DataDB)
 	if err != nil {
 		fmt.Println("Error initializing database:", err)
@@ -117,13 +116,14 @@ func main() {
 	}
 
 	var count int
-	if err := database.QueryRow("SELECT COUNT(*) FROM jobs").Scan(&count); err != nil {
+	var deleted int64
+	count, err = db.GetJobsCount(database)
+	if err != nil {
 		fmt.Println("Error checking jobs count:", err)
 		os.Exit(1)
 	}
 
-	fmt.Printf("✅ Saved %d jobs to SQLite\n", len(allJobs))
-	fmt.Printf("📊 Jobs actually in database: %d\n", count)
+	fmt.Println("Jobs count:", count)
 
 	file, err = os.Create(constants.DataFile)
 	if err != nil {
@@ -149,4 +149,11 @@ func main() {
 		fmt.Println("Error updating last scraped:", err)
 		os.Exit(1)
 	}
+	if deleted, err = db.DeleteJobsNotUpdatedToday(database); err != nil {
+		fmt.Println("Error deleting jobs:", err)
+		os.Exit(1)
+	}
+	fmt.Printf("✅ Saved %d jobs to SQLite\n", len(allJobs))
+	fmt.Printf("X Jobs deleted: %d\n", deleted)
+	fmt.Printf("📊 Jobs actually in database: %d\n", count)
 }

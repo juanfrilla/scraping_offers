@@ -94,3 +94,34 @@ func SaveJobs(database *sql.DB, jobs []models.ScrapedJob) error {
 
 	return nil
 }
+
+func DeleteJobsNotUpdatedToday(database *sql.DB) (int64, error) {
+	query := `
+        DELETE FROM jobs
+        WHERE updated_at < unixepoch('now', 'start of day')
+           OR updated_at >= unixepoch('now', 'start of day', '+1 day')
+    `
+
+	result, err := database.Exec(query)
+	if err != nil {
+		return 0, err
+	}
+
+	deleted, err := result.RowsAffected()
+	if err != nil {
+		return 0, err
+	}
+
+	return deleted, nil
+}
+
+func GetJobsCount(database *sql.DB) (int, error) {
+	var count int
+
+	err := database.QueryRow("SELECT COUNT(*) FROM jobs").Scan(&count)
+	if err != nil {
+		return 0, err
+	}
+
+	return count, nil
+}
