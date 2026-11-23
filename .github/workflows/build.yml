@@ -37,6 +37,12 @@ jobs:
       - name: Install Go dependencies
         run: go mod tidy
 
+      # -------------------------
+      # GO TESTS
+      # -------------------------
+      - name: Run Go tests
+        run: go test -v ./go/...
+
       - name: Build Go scraper for Linux
         run: |
           GOOS=linux GOARCH=amd64 go build -o ./go/bin/scraper_go ./go/main.go

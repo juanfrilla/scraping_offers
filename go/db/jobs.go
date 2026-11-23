@@ -14,30 +14,22 @@ func SaveJobs(database *sql.DB, jobs []models.ScrapedJob) error {
 	}
 
 	query := `
-    INSERT INTO jobs (
-        title,
-        company,
-        location,
-        url,
-        date_posted,
-        modality,
-        platform,
-        keyword_appeared,
-        logo_url,
-        external_id
-    )
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-
-    ON CONFLICT(platform, external_id) DO UPDATE SET
-        title = excluded.title,
-        company = excluded.company,
-        location = excluded.location,
-        url = excluded.url,
-        date_posted = excluded.date_posted,
-        modality = excluded.modality,
-        keyword_appeared = excluded.keyword_appeared,
-        logo_url = excluded.logo_url,
-        updated_at = CURRENT_TIMESTAMP;
+INSERT INTO jobs (
+    title, company, location, url, date_posted,
+    modality, platform, keyword_appeared, logo_url, external_id,
+    updated_at
+)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, unixepoch())
+ON CONFLICT(platform, external_id) DO UPDATE SET
+    title            = excluded.title,
+    company          = excluded.company,
+    location         = excluded.location,
+    url              = excluded.url,
+    date_posted      = excluded.date_posted,
+    modality         = excluded.modality,
+    keyword_appeared = excluded.keyword_appeared,
+    logo_url         = excluded.logo_url,
+    updated_at       = unixepoch();
 `
 
 	tx, err := database.Begin()
@@ -96,8 +88,8 @@ func SaveJobs(database *sql.DB, jobs []models.ScrapedJob) error {
 	return nil
 }
 
-func DeleteJobsNotUpdatedToday(database *sql.DB, loc *time.Location) (int64, error) {
-	now := time.Now().In(loc)
+func DeleteJobsNotUpdatedToday(database *sql.DB, now time.Time, loc *time.Location) (int64, error) {
+	now = now.In(loc)
 	startOfDay := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, loc)
 	startOfNextDay := startOfDay.AddDate(0, 0, 1)
 
