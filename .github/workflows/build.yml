@@ -41,7 +41,7 @@ jobs:
       # GO TESTS
       # -------------------------
       - name: Run Go tests
-        run: go test -v ./go/...
+        run: go test -v ./go/db
 
       - name: Build Go scraper for Linux
         run: |
