@@ -64,6 +64,15 @@ jobs:
         run: uv run --no-sync python -m py_compile main.py
 
       # -------------------------
+      # CHECK PUBLIC IP
+      # -------------------------
+      - name: Check GitHub Actions public IP
+        run: |
+          echo "GitHub Actions public IP:"
+          curl -s curl -s https://ipinfo.io
+          echo
+
+      # -------------------------
       # SCRAPING
       # -------------------------
       - name: Run Go scraper
