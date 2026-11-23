@@ -57,11 +57,14 @@ jobs:
           enable-cache: true
           python-version: "3.11"
 
+      - name: Create virtual environment
+        run: uv venv
+
       - name: Install Python dependencies
-        run: uv pip install --system -r requirements.txt
+        run: uv pip install --python .venv/bin/python -r requirements.txt
 
       - name: Validate Streamlit app imports
-        run: python -m py_compile main.py
+        run: uv run --no-sync python -m py_compile main.py
 
       # -------------------------
       # SCRAPING
