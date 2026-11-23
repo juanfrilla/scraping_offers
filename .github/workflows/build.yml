@@ -57,9 +57,6 @@ jobs:
           enable-cache: true
           python-version: "3.11"
 
-      - name: Create virtual environment
-        run: uv venv
-
       - name: Install Python dependencies
         run: uv pip install --python .venv/bin/python -r requirements.txt
 
