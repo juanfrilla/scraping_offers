@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"scraping_offers/go/models"
 	"strings"
+	"time"
 )
 
 func SaveJobs(database *sql.DB, jobs []models.ScrapedJob) error {
@@ -95,24 +96,22 @@ func SaveJobs(database *sql.DB, jobs []models.ScrapedJob) error {
 	return nil
 }
 
-func DeleteJobsNotUpdatedToday(database *sql.DB) (int64, error) {
-	query := `
+func DeleteJobsNotUpdatedToday(database *sql.DB, loc *time.Location) (int64, error) {
+	now := time.Now().In(loc)
+	startOfDay := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, loc)
+	startOfNextDay := startOfDay.AddDate(0, 0, 1)
+
+	const query = `
         DELETE FROM jobs
-        WHERE updated_at < unixepoch('now', 'start of day')
-           OR updated_at >= unixepoch('now', 'start of day', '+1 day')
+        WHERE updated_at IS NULL
+           OR updated_at <  ?
+           OR updated_at >= ?
     `
-
-	result, err := database.Exec(query)
+	res, err := database.Exec(query, startOfDay.Unix(), startOfNextDay.Unix())
 	if err != nil {
 		return 0, err
 	}
-
-	deleted, err := result.RowsAffected()
-	if err != nil {
-		return 0, err
-	}
-
-	return deleted, nil
+	return res.RowsAffected()
 }
 
 func GetJobsCount(database *sql.DB) (int, error) {
