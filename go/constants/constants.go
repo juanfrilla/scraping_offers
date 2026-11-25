@@ -120,7 +120,7 @@ var ForbiddenCompanies = []string{
 }
 
 var ForbiddenCountries = []string{
-	"india", "philippines", "brazil", "argentina",
+	"india", "philippines", "brazil", "argentina", "mexico", "panama", "korea",
 }
 
 var JsonTypes = []string{"application/json", "application/ld+json"}
